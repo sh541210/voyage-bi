@@ -1,0 +1,115 @@
+@import './styles/split.less';
+@import './styles/scroll.css';
+
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap'); */
+
+/* FIXME 配置active颜色无效，暂时用css修改 */
+.ant-menu-item-selected {
+    color: #4A5FDF!important;
+    font-weight: bold;
+    svg path {
+    }
+}
+.ant-layout-sider-children {
+    padding-inline: 0!important;
+}
+
+#logo {
+    margin-right: 10px;
+}
+#logo a h1 {
+    font-family: 'Quicksand',
+    'Poppins', 'Nunito', 'Rubik', sans-serif;
+    font-weight: bold;
+    letter-spacing: -1.5px;
+    /* line-height: 2; */
+    font-size: 22px;
+    margin-left: 8px;
+    color: #555;
+    user-select: none;
+}
+.dark #logo a h1 {
+    color: white;
+}
+
+.ant-col .ant-form-item-control {
+    max-width: none !important;
+}
+
+.ant-modal-header {
+    margin-bottom: 20px !important;
+}
+
+#root {
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+.dark {
+    #root {
+        background-color: black;
+    }
+}
+
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
+
+.ant-tabs-content-holder,
+.ant-tabs-content,
+.ant-tabs-tabpane {
+    width: 100% !important;
+    height: 100% !important;
+    position: relative;
+}
+
+.ant-page-header-footer {
+    flex: 1;
+}
+.ant-pro-page-container .ant-pro-page-container-warp-page-header .ant-page-header-footer {
+    margin-block-start: 0 !important;
+}
+
+.ant-pro-query-filter-row-split:last-child {
+    margin-block-end: 0;
+}
+
+.ant-segmented .ant-segmented-group {
+    flex-wrap: wrap;
+}
+
+.ant-collapse-expand-icon {
+    padding-inline-end: 4px !important;
+}
+
+.ant-pro-page-container-affix>div {
+    height: 100%;
+    position: relative;
+}
+.ant-pro-global-header-header-actions {
+    overflow: hidden;
+}
+
+.ant-switch, .ant-switch .ant-switch-handle::before {
+    border-radius: 2px;
+}
+/* 覆盖 Modal 背景样式 */
+.ant-modal-content {
+    backdrop-filter: blur(10px); /* 背景模糊效果 */
+    background: rgba(255, 255, 255, 0.8); /* 半透明背景 */
+}
+  
+/* 覆盖遮罩层样式 */
+.ant-modal-mask,.ant-drawer-mask {
+    backdrop-filter: blur(5px); /* 遮罩层模糊效果 */
+    background: rgba(0, 0, 0, 0.85)!important; /* 遮罩的透明背景 */
+}
+.ant-menu-title-content {
+    user-select: none;
+}
+.ant-tree-node-selected {
+    .ant-tree-title {
+        color: #fff!important
+    }
+}

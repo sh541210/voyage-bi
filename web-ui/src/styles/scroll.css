@@ -1,0 +1,28 @@
+/* 全局滚动条淡化 */
+::-webkit-scrollbar {
+  width: 4px;
+  /* background: transparent; */
+}
+::-webkit-scrollbar:horizontal {
+    height: 4px;
+    /* background: transparent; */
+}
+
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.2);
+  border-radius: 3px;
+  opacity: 0; /* 默认隐藏 */
+  transition: opacity 0.3s;
+}
+
+/* 鼠标悬停时显示 */
+:hover::-webkit-scrollbar-thumb {
+  opacity: 1;
+}
+
+/* Firefox支持 */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.2) transparent;
+}
