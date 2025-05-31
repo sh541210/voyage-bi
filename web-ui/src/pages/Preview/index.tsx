@@ -10,16 +10,23 @@ import { renderErrorPrint } from "@/utils/render"
 const DashboardPreview = () => {
     const [params] = useSearchParams()
     const key = params.get('dashboardKey') || params.get('key') || undefined
+    const dark = params.get('theme') === 'dark'
+    const { setDark } = useModel('global')
+
+    useEffect(() => {
+        setDark(dark)
+    }, [dark])
+
     const env = params.get('env')
     const [snapshot, setSnapshot] = useState<DashboardSnapshotVO>()
     const [message, setMessage] = useState<string>()
     const { setInitialState } = useModel('@@initialState')
 
     if (!key) {
-        setTimeout(() => {
-            history.push('/')
-        }, 1000)
-        // return <div className="" style={{ padding: '40px', textAlign: 'center' }}>没有找到仪表板/报表</div>
+        // setTimeout(() => {
+        //     history.push('/')
+        // }, 1000)
+        return <div className="" style={{ padding: '40px', textAlign: 'center' }}>没有找到仪表板/报表</div>
     }
 
     // 默认区域
