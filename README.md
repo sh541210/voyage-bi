@@ -100,7 +100,16 @@
 
 ## 👓 界面预览
 
+### gif
 ![Voyage BI 界面演示](http://fusb.top/data/voyage/images/show.gif)
+
+### mobile page
+
+![Voyage BI 界面演示](http://fusb.top/data/voyage/images/mobile.png)
+
+### design page
+
+![Voyage BI 界面演示](http://fusb.top/data/voyage/images/design.png)
 ---
 
 <!-- ## ✨ 功能特性 -->
