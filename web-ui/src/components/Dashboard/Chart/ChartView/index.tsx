@@ -13,6 +13,7 @@ import classNames from "classnames"
 import EchartsMapView from "./echarts/MapView"
 import DynamicRenderer from "./ReactChartComponent"
 import { renderEmpty, renderErrorPrint } from "@/utils/render"
+import * as echarts from 'echarts';
 
 export interface GraphEvent<T = any> {
     name: GraphEventName
@@ -150,6 +151,7 @@ const ChartView = (props: ChartViewProps) => {
             // 执行渲染代码的第一个阶段
             config = execTs(script, {
                 data, chartType, mobile, dark,
+                echarts,
                 renderConfig: props.chartStyleCfg.renderChartConfig || {},
                 transpose: (matrix: any[][]) => matrix[0]?.map((_, colIndex) => matrix.map(row => row[colIndex]))
             });
@@ -166,6 +168,7 @@ const ChartView = (props: ChartViewProps) => {
             config = execTs(props.renderCode, {
                 config,
                 data, chartType, mobile, dark,
+                echarts,
                 renderConfig: props.chartStyleCfg.renderChartConfig || {},
                 transpose: (matrix: any[][]) => matrix[0]?.map((_, colIndex) => matrix.map(row => row[colIndex]))
             });

@@ -1,1 +1,1 @@
-"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[72571],{209826:function(a,u,t){t.r(u);var e=t(785893),n=function(){return(0,e.jsx)("div",{className:" p-10 text-center text-gray-300 text-3xl mt-40",children:"404 \u627E\u4E0D\u5230\u9875\u9762"})};u.default=n}}]);
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[2571],{9826:function(a,u,t){t.r(u);var e=t(85893),n=function(){return(0,e.jsx)("div",{className:" p-10 text-center text-gray-300 text-3xl mt-40",children:"404 \u627E\u4E0D\u5230\u9875\u9762"})};u.default=n}}]);

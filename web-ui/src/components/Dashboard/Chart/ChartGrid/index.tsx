@@ -232,7 +232,7 @@ const ChartGrid = (props: ChartGridPros) => {
                 <div className={classNames('', group.styleCfg?.filterDisplay === 'inline' ?
                     'flex-row justify-between items-center' : 'flex-col items-start')}>
                     {/* 图表组标题 */}
-                    <div className="flex items-center">
+                    <div className="flex items-center title-header">
                         {showTitle ? <div className={classNames('font-bold text-xl flex items-center title group-title',
                             !showTitle ? 'py-0 hidden' : 'ml-2')}>
                             {bus.icon(group.id, ' text-lg')}
@@ -330,7 +330,7 @@ const ChartGrid = (props: ChartGridPros) => {
                     <div className={classNames('flex', chart.styleCfg?.filterDisplay === 'inline' ?
                         'flex-row justify-between items-center' : 'flex-col items-start')}
                         style={{ flex: showTitle ? '0 0 30px' : '' }}>
-                        {showTitle ? <div className="flex items-center justify-between py-1">
+                        {showTitle ? <div className="flex items-center justify-between py-1 w-full title-header">
                             <span className={classNames('flex items-center ml-2 title font-bold text-md')}>
                                 {!inTab && linkIcon}
                                 {chart.columnNotFound && !readOnly ? <Badge dot>{chartName}</Badge> : chartName}
