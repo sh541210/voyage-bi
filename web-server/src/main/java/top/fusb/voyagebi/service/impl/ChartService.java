@@ -49,10 +49,12 @@ public class ChartService {
         List<Long> dataSheetIds = chartList.stream().map(Chart::getDataSheetId).toList();
         Map<Long, String> map = new HashMap<>();
         Map<Long, DataSheetExtraInfo> dataSheetExtraInfoMap = dataSheetService.getDataSheetExtraInfo(dataSheetIds);
-        if (!dataSheetIds.isEmpty()) map.putAll(dataSheetColumnMapper.selectList(i -> i
-                        .select(DataSheetColumn::getId, DataSheetColumn::getName)
-                        .in(DataSheetColumn::getDataSheetId, dataSheetIds))
-                .stream().collect(Collectors.toMap(IdEntity::getId, DataSheetColumn::getName)));
+        if (!dataSheetIds.isEmpty()) {
+            map.putAll(dataSheetColumnMapper.selectList(i -> i
+                            .select(DataSheetColumn::getId, DataSheetColumn::getName)
+                            .in(DataSheetColumn::getDataSheetId, dataSheetIds))
+                    .stream().collect(Collectors.toMap(IdEntity::getId, DataSheetColumn::getName)));
+        }
         return listAToListB(chartList, ChartVO.class, (a, b) -> {
             DataSheetExtraInfo info = dataSheetExtraInfoMap.get(a.getDataSheetId());
             if (info != null) {
@@ -213,9 +215,9 @@ public class ChartService {
             }
             return dataResult;
         };
-        if (updater != null) queryRequest.setDataResultConsumer(i -> {
-            updater.useData(wrapper.apply(i));
-        });
+        if (updater != null) {
+            queryRequest.setDataResultConsumer(i -> updater.useData(wrapper.apply(i)));
+        }
         return wrapper.apply(dataClientFacade.queryForResult(queryRequest));
     }
 
@@ -223,15 +225,13 @@ public class ChartService {
         if (dataRequest.isTotal()) {
             return null;
         }
+        var limit = Optional.ofNullable(cfg.getLimit()).orElse(1000);
         if (dataRequest.isPreview()) {
-            return 500;
-        }
-        if (cfg.getLimit() != null) {
-            return cfg.getLimit();
+            return Math.min(500, limit);
         }
         return Optional.ofNullable(dataRequest.getChartCfg())
                 .map(ChartCfg::getLimit)
-                .orElse(1000);
+                .orElse(limit);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -272,8 +272,9 @@ public class ChartService {
     public Long saveChartGroup(ChartGroupForm groupForm) {
         ChartGroup chartGroup = aToB(groupForm, ChartGroup.class);
         Long groupId = groupForm.getId();
-        if (groupId != null && groupId > 0) chartGroupMapper.updateById(chartGroup);
-        else {
+        if (groupId != null && groupId > 0) {
+            chartGroupMapper.updateById(chartGroup);
+        } else {
             chartGroup.setCfg(new ChartGroupCfg());
             chartGroup.setStyleCfg(Map.of());
             chartGroupMapper.insert(chartGroup);
@@ -281,9 +282,12 @@ public class ChartService {
         }
         Long finalGroupId = groupId;
         List<Chart> charts = chartMapper.selectList(i -> i.eq(Chart::getGroupId, finalGroupId));
-        for (Chart chart : charts) chartMapper.updateById(chart.getId(), i -> i.set(Chart::getGroupId, null));
-        for (Long chartId : groupForm.getChartIds())
+        for (Chart chart : charts) {
+            chartMapper.updateById(chart.getId(), i -> i.set(Chart::getGroupId, null));
+        }
+        for (Long chartId : groupForm.getChartIds()) {
             chartMapper.updateById(chartId, i -> i.set(Chart::getGroupId, finalGroupId));
+        }
         return groupId;
     }
 
@@ -296,13 +300,17 @@ public class ChartService {
 
     public void removeGroup(Long groupId) {
         long count = chartMapper.countBy(i -> i.eq(Chart::getGroupId, groupId));
-        if (count > 0) throw new RuntimeException("存在图表关联");
+        if (count > 0) {
+            throw new RuntimeException("存在图表关联");
+        }
         chartGroupMapper.deleteById(groupId);
     }
 
     public ChartVO getChart(Long id) {
         ChartVO chart = aToB(chartMapper.selectById(id), ChartVO.class);
-        if (chart == null) throw new BizException(ErrorCode.define("图表不存在"));
+        if (chart == null) {
+            throw new BizException(ErrorCode.define("图表不存在"));
+        }
         Map<Long, DataSheetExtraInfo> map = dataSheetService.getDataSheetExtraInfo(List.of(chart.getDataSheetId()));
         DataSheetExtraInfo info = map.get(chart.getDataSheetId());
         if (info != null) {

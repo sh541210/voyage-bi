@@ -11,6 +11,7 @@ const useGlobal = () => {
   const setAntdConfig = useAntdConfigSetter();
   const { darkAlgorithm, defaultAlgorithm } = theme;
   const [dataMode, setDataMode] = useLocalStorage<DataMode>('data_mode', 'CACHE')
+  const [hiddenInteractionIcon, setHiddenInteractionIcon] = useState<boolean>(false)
 
   useEffect(() => {
     if (dark) {
@@ -26,7 +27,9 @@ const useGlobal = () => {
   return {
     name, setName,
     dark, setDark,
-    dataMode, setDataMode
+    dataMode, setDataMode,
+    hiddenInteractionIcon,
+    setHiddenInteractionIcon
   };
 };
 

@@ -16,6 +16,7 @@ export interface MapData extends MapRgistery {
 
 export interface MapRgistery { level: number, codes: number[], names: string[] }
 export const mapLevelTypes: MapLevelType[] = ['country', 'province', 'city', 'area']
+const registeredMaps = new Set<string>()
 
 const EchartsMapView = (props: ChartViewProps & {
     config: EChartsReactProps,
@@ -27,13 +28,17 @@ const EchartsMapView = (props: ChartViewProps & {
 
     const registerMap = async (state: MapRgistery) => {
         try {
+            const key = current(state)
+            // if (!registeredMaps.has(key)) {
             setLoadState(0)
             const mapJson = await getGeoJson(state.codes)
-            console.log(`${props.chartId}加载${state.names[state.level]}[${current(state)}}]地图`)
+            console.log(`${props.chartId}加载${state.names[state.level]}[${key}}]地图`)
             // @ts-ignore
-            echarts.registerMap(current(state), mapJson);
-            // FIXME 有时候会变成100×100，暂时这样处理
+            echarts.registerMap(key, mapJson);
             setLoadState(1)
+            registeredMaps.add(key)
+            // }
+            // FIXME 有时候会变成100×100，暂时这样处理
             setTimeout(() => {
                 setState(state)
             }, 300)
@@ -43,6 +48,7 @@ const EchartsMapView = (props: ChartViewProps & {
             console.error("加载地图失败:", error);
         }
     };
+
     useEffect(() => {
         registerMap(state)
     }, [])
@@ -68,19 +74,11 @@ const EchartsMapView = (props: ChartViewProps & {
 
     const getOptions = () => {
         const option = props.config.option
-        console.log({
-            ...option,
-            geo: option.geo?.map((i: any) => ({ ...i, map: current(state) })),
-            series: option.series.map((i: any) => ({
-                ...i,
-                type: 'map',
-                map: current(state)
-            }))
-        })
         return {
             ...option,
+            replaceMerge: ['series', 'geo'],
             geo: option.geo?.map((i: any) => ({ ...i, map: current(state) })),
-            series: option.series.map((i: any) => ({
+            series: option.series.map((i: any) => (i.type !== 'map' ? i : {
                 ...i,
                 type: 'map',
                 map: current(state)
@@ -102,6 +100,7 @@ const EchartsMapView = (props: ChartViewProps & {
                     theme={global.dark ? 'dark' : ''}
                     {...props.config}
                     option={getOptions()}
+                    opts={{ renderer: 'svg' }}
                     style={{ height: "100%", width: "100%" }} // 设置图表大小
                 />
             }

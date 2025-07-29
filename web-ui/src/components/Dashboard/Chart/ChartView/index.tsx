@@ -56,9 +56,6 @@ const ChartView = (props: ChartViewProps) => {
             setDataResult(result)
             setLoading(false)
         })
-        // .then(setDataResult)
-        // .then(() => setLoading(false))
-        // .catch(() => setLoading(false))
     }
 
     // 根据数据变动判断是否更新数据
@@ -216,31 +213,33 @@ const ChartView = (props: ChartViewProps) => {
             })).filter(i => i.indexes.length > 0)
             const sortedIndexes = toIndexes(allColumns, chartStyleCfg.sortedKeys || [], 'key')
             const hideIndexes = toIndexes(allColumns, chartStyleCfg.tableHideKeys?.[mobile ? 'mobile' : 'pc'] || [], 'key')
-            return <div className="p-2 relative h-full w-full chart-table"><DataTable
-                onColClick={(rowIndex, colIndex, _) => props.onTableClick?.(rowIndex, colIndex, undefined)}
-                highlights={highlights}
-                sortedIndexes={sortedIndexes}
-                hideColumnIndexes={hideIndexes}
-                showIndex={chartStyleCfg?.showIndex}
-                indexColumnName={chartStyleCfg?.indexName}
-                size={mobile ? 'mini' : 'small'}
-                pagination={{
-                    pageSize: chartStyleCfg?.pageSize || 15,
-                    hidden: chartStyleCfg?.hidePagination,
-                    total: data?.total
-                }}
-                onSortChange={(index: number, orderBy) => {
-                    setDynamicSort({ key: allColumns[index]?.key, orderBy })
-                }}
-                data={data}
-                actions={(_, index) => (chartStyleCfg?.actions || []).map((action, idx) => <div key={`${index}-${idx}`}
-                    className="inline-block cursor-pointer text-primaryColor bg-inherit px-2 py-1"
-                    onClick={(e) => {
-                        props.onTableClick?.(index, undefined, idx);
-                        e.stopPropagation();
+            return <div className="p-2 relative h-full w-full chart-table">
+                <DataTable
+                    scrollOptions={{ auto: props.chartStyleCfg.autoScroll, loop: true }}
+                    onColClick={(rowIndex, colIndex, _) => props.onTableClick?.(rowIndex, colIndex, undefined)}
+                    highlights={highlights}
+                    sortedIndexes={sortedIndexes}
+                    hideColumnIndexes={hideIndexes}
+                    showIndex={chartStyleCfg?.showIndex}
+                    indexColumnName={chartStyleCfg?.indexName}
+                    size={mobile ? 'mini' : 'small'}
+                    pagination={{
+                        pageSize: chartStyleCfg?.pageSize || 15,
+                        hidden: chartStyleCfg?.hidePagination,
+                        total: data?.total
                     }}
-                >{action}</div>)}
-            />
+                    onSortChange={(index: number, orderBy) => {
+                        setDynamicSort({ key: allColumns[index]?.key, orderBy })
+                    }}
+                    data={data}
+                    actions={(_, index) => (chartStyleCfg?.actions || []).map((action, idx) => <div key={`${index}-${idx}`}
+                        className="inline-block cursor-pointer text-primaryColor bg-inherit px-2 py-1"
+                        onClick={(e) => {
+                            props.onTableClick?.(index, undefined, idx);
+                            e.stopPropagation();
+                        }}
+                    >{action}</div>)}
+                />
             </div>
         } else {
             if (chartCp?.type === 'react') {
@@ -258,7 +257,7 @@ const ChartView = (props: ChartViewProps) => {
                 console.warn('获取配置错误', ex)
                 return renderErrorPrint(ex)
             }
-            if (props.chartType === 'MAP') {
+            if (props.chartType === 'MAP' || props.chartType.toLowerCase().includes('map')) {
                 return <EchartsMapView
                     key={props.dataRequest.chartId}
                     {...props} config={config} />
@@ -304,11 +303,13 @@ const ChartView = (props: ChartViewProps) => {
                         onChange={types => setChartType(types[0])}
                     />
                 </div> : <></>}
-            {(loading) && renderEmpty(<>
+            {(!props.chartStyleCfg.hideRrefreshTip && loading) && renderEmpty(<>
                 <LoadingOutlined className=' text-4xl font-thin mb-2' />
                 <div>数据加载中</div>
             </>)}
-            <div className={classNames('h-full w-full relative', loading && 'hidden')}>
+            <div className={classNames('h-full w-full relative',
+                !props.chartStyleCfg.hideRrefreshTip && loading && 'hidden'
+            )}>
                 {content}
             </div>
         </div >

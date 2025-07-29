@@ -10,6 +10,7 @@ import { ChartGridPros, chartTabs } from "../Dashboard/Chart/ChartGrid";
 import BaseModal from "../base/BaseModal";
 import { MyIcon } from "../base/MyIcon";
 import request from "@/utils/request";
+import { useModel } from "@umijs/max";
 
 interface ChartInteractionEventBusProps extends ChartGridPros {
     onDataUpdate: (dataRequest: ChartDataRequest, callback: (result: DataResult) => void) => void
@@ -25,6 +26,7 @@ export const useChartInteractionEventBus = (props: ChartInteractionEventBusProps
     const [modalChart, setModalChart] = useState<ModalChart>()
     const modalRef = useRef<any>(null)
     const [passParameterValues, setPassParameterValues] = useState<{ [chartId: number]: any }>()
+    const { hiddenInteractionIcon } = useModel('global')
 
     useEffect(() => {
         groups.forEach(i => {
@@ -186,6 +188,9 @@ export const useChartInteractionEventBus = (props: ChartInteractionEventBusProps
             && i.target === `group_${id}` && i.hideTabs).length > 0,
         // 联动图表
         icon: (id: ChartGroupVO['id'] | ChartVO['id'], className?: string): ReactNode | undefined => {
+            if (hiddenInteractionIcon) {
+                return
+            }
             const sourceCfgs = distinctByKey(cfgs.filter(i => getId(i.source) === id), 'source')
             const targetCfgs = distinctByKey(cfgs.filter(i => getId(i.target) === id), 'target')
             const index = sourceCfgs.length > 0 && targetCfgs.length > 0 ? 2 :

@@ -11,7 +11,13 @@ const DashboardPreview = () => {
     const [params] = useSearchParams()
     const key = params.get('dashboardKey') || params.get('key') || undefined
     const dark = params.get('theme') === 'dark'
+    const hiddenThemeSwitch = params.get('hiddenThemeSwitch') === 'true'
+    const hiddenInteractionIcon = params.get('hiddenInteractionIcon') === 'true'
+    const { setHiddenInteractionIcon } = useModel('global')
     const { setDark } = useModel('global')
+    useEffect(() => {
+        if (hiddenInteractionIcon) setHiddenInteractionIcon(true)
+    }, [hiddenInteractionIcon])
 
     useEffect(() => {
         setDark(dark)
@@ -90,7 +96,7 @@ const DashboardPreview = () => {
     }, [])
 
     return <div className="bg-antdColorBgLayout dark:bg-antdDarkColorFillQuaternary preview-container text-black dark:text-white h-full w-full relative">
-        <ThemeSwitch className=" absolute right-0 text-2xl" />
+        {!hiddenThemeSwitch && <ThemeSwitch className=" absolute right-0 text-2xl" />}
         {snapshot ? renderPreview(snapshot) :
             renderErrorPrint(new Error(message), ' text-3xl font-thin text-red-500')
         }

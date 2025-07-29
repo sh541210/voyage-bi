@@ -573,7 +573,7 @@ const ChartEditor = () => {
                             yColumns={y}
                             xColumns={x}
                             chartType={chart.type}
-                            chartStyleCfg={chart.styleCfg}
+                            chartStyleCfg={{ ...chart.styleCfg, autoScroll: false }}
                         /> : <></>}
                     </div>
                 </div>

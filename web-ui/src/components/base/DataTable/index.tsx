@@ -13,6 +13,12 @@ export interface HighlightProps {
 
 interface DataTableProps {
   data: DataSet;
+  scrollOptions?: {
+    auto?: boolean;          // 是否自动滚动
+    interval?: number;       // 间隔 ms
+    step?: number;           // 步长 px
+    loop?: boolean;          // 是否循环
+  }
   size?: 'mini' | 'small';
   pagination?: { pageSize: number; hidden?: boolean, total?: number };
   actions?: (rowData: any[], index: number) => JSX.Element[];
@@ -26,7 +32,9 @@ interface DataTableProps {
 }
 
 const DataTable: React.FC<DataTableProps> = ({ data: { columns, rows }, pagination, size = 'small',
-  actions, showIndex, indexColumnName, highlights, onColClick, sortedIndexes, onSortChange, hideColumnIndexes }) => {
+  actions, showIndex, indexColumnName, highlights,
+  onColClick, sortedIndexes, onSortChange, hideColumnIndexes, scrollOptions = { auto: false } }) => {
+  const { auto = false, loop = false, interval = 100, step = 2 } = scrollOptions
   const [currentPage, setCurrentPage] = useState(1);
   const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
   const [hoveredColIndex, setHoveredColIndex] = useState<number | null>(null);
@@ -54,6 +62,7 @@ const DataTable: React.FC<DataTableProps> = ({ data: { columns, rows }, paginati
   const hiddenPagination = !pagination || pagination.hidden
 
   const observerRef = useRef<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!pagination?.hidden) {
@@ -65,6 +74,10 @@ const DataTable: React.FC<DataTableProps> = ({ data: { columns, rows }, paginati
       if (entries[0].isIntersecting) {
         setCurrentPage(prevPage => prevPage + 1);
       }
+    }, {
+      root: scrollContainerRef.current,
+      rootMargin: '0px',
+      threshold: 0.1,
     });
 
     if (observerRef.current) {
@@ -77,6 +90,37 @@ const DataTable: React.FC<DataTableProps> = ({ data: { columns, rows }, paginati
       }
     };
   }, [pagination?.hidden]);
+
+  useEffect(() => {
+    if (!pagination?.hidden || !auto) return;
+
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    let currentClickIndex = 0;
+    let scrollStep = 40;
+    onColClick?.(0, 0, null)
+
+    const intervalId = setInterval(() => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      if (scrollTop + clientHeight >= scrollHeight - 2) {
+        container.scrollTo({ top: 0, behavior: 'auto' });
+        currentClickIndex = 0;
+        scrollStep = 0;
+      } else {
+        container.scrollBy({ top: 1, behavior: 'smooth' });
+        scrollStep++;
+        if (scrollStep >= 40) {
+          // 滚动完成一行时模拟点击
+          onColClick?.(currentClickIndex % rows.length, 0, rows[currentClickIndex % rows.length][0]);
+          currentClickIndex++;
+          scrollStep = 0;
+        }
+      }
+    }, 100);
+
+    return () => clearInterval(intervalId);
+  }, [pagination?.hidden, auto]);
 
   const renderPagination = () => {
     if (hiddenPagination) {
@@ -247,36 +291,50 @@ const DataTable: React.FC<DataTableProps> = ({ data: { columns, rows }, paginati
       return classNames(baseClass);
     };
 
-    return rows.slice(startIndex, endIndex).map((item, rowIndex) => {
-      const doms = actions?.(item, rowIndex);
+    const dataToRender = pagination?.hidden
+      ? (auto && loop
+        ? Array.from({ length: currentPage * pageSize }, (_, i) => rows[i % rows.length]) // 循环
+        : rows.slice(startIndex, endIndex)) // 懒加载
+      : rows.slice(startIndex, endIndex); // 正常分页
+
+    return dataToRender.map((item, rowIndex) => {
+      // 如果是循环模式，计算真实的原始行索引
+      const realRowIndex = pagination?.hidden && auto && loop
+        ? rowIndex % rows.length
+        : startIndex + rowIndex;
+
+      const doms = actions?.(item, realRowIndex);
+
       return (
         <tr key={rowIndex}>
           {/* 显示索引列 */}
           {showIndex && (
-            <td className={className(rowIndex, -1, startIndex + rowIndex + 1)}>{startIndex + rowIndex + 1}</td>
+            <td className={className(realRowIndex, -1, realRowIndex + 1)}>{realRowIndex + 1}</td>
           )}
-          {item.filter((_, idx) => !hideColumnIndexes || !hideColumnIndexes.includes(idx)).map((value, colIndex) => {
-            const colName = columns[colIndex]; // 获取列名
-            return (
-              <td
-                key={colIndex}
-                className={className(rowIndex, colIndex, value)}
-                onMouseEnter={() => handleCellHover(rowIndex, colIndex)}
-                onMouseLeave={() => handleCellHover(null, null)}
-                onClick={() => onColClick?.(rowIndex, colIndex, value)}
-              >
-                {renderTdContent(value)}
-              </td>
-            );
-          })}
+          {item
+            .filter((_, idx) => !hideColumnIndexes || !hideColumnIndexes.includes(idx))
+            .map((value, colIndex) => {
+              const colName = columns[colIndex]; // 获取列名
+              return (
+                <td
+                  key={colIndex}
+                  className={className(realRowIndex, colIndex, value)}
+                  onMouseEnter={() => handleCellHover(realRowIndex, colIndex)}
+                  onMouseLeave={() => handleCellHover(null, null)}
+                  onClick={() => onColClick?.(realRowIndex, colIndex, value)}
+                >
+                  {renderTdContent(value)}
+                </td>
+              );
+            })}
           {doms && doms.length > 0 && (
-            <td className={className(rowIndex, item.length, '')}>
+            <td className={className(realRowIndex, item.length, '')}>
               {doms.map((dom, index) =>
                 React.cloneElement(dom, {
                   key: index,
                   className: classNames(
-                    dom.props.className, // 保留原始className
-                    size === 'mini' ? 'text-xs' : 'text-sm' // 添加动态class
+                    dom.props.className,
+                    size === 'mini' ? 'text-xs' : 'text-sm'
                   ),
                 })
               )}
@@ -293,7 +351,7 @@ const DataTable: React.FC<DataTableProps> = ({ data: { columns, rows }, paginati
   return (
     <div className="relative w-full h-full overflow-hidden text-black dark:text-white flex flex-col justify-between">
       <div className="w-full min-h-0 flex-1 overflow-hidden">
-        <div className='h-full w-full relative overflow-y-auto'>
+        <div className='h-full w-full relative overflow-y-auto scroll-container' ref={scrollContainerRef}>
           <table className="border-spacing-0 min-w-full bg-transparent border-gray-200 dark:border-antdDarkBorder border-collapse bg-white dark:bg-black">
             <thead>
               {renderTableHeader()}
@@ -302,7 +360,10 @@ const DataTable: React.FC<DataTableProps> = ({ data: { columns, rows }, paginati
               {renderTableBody()}
             </tbody>
           </table>
-          {pagination?.hidden && <div ref={observerRef} className="observer-element"></div>}
+          {pagination?.hidden && <div ref={observerRef} className="observer-element" style={{
+            height: '30px',
+            background: 'transparent',
+          }}></div>}
         </div>
       </div>
       {!pagination?.hidden && (pageSize < total) &&

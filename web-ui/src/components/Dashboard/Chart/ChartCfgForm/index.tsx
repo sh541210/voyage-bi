@@ -112,7 +112,7 @@ const ChartCfgForm = (props: ChartCfgFormProps) => {
                 }} />, true)}
             {['TABLE', 'COLUMN', 'LINE'].includes(chart.type) && renderCollapse('数据相关', <>
                 <FormItem label='数据量限制'>
-                    <InputNumber<number> min={1}
+                    <InputNumber<number> min={0}
                         value={chart.cfg.limit}
                         onChange={(value: number | null) => updateChartCfg(i => i.limit = value)} />
                 </FormItem></>)}
@@ -142,6 +142,10 @@ const ChartCfgForm = (props: ChartCfgFormProps) => {
                     <Select placeholder='输入后回车' mode='tags' value={chart.styleCfg.actions}
                         onChange={value => updateChartStyleCfg(i => i.actions = value)} />
                 </FormItem>
+                {chart.styleCfg?.hidePagination && <FormItem label='无限滚动'>
+                    <Switch defaultValue={false} value={chart.styleCfg?.autoScroll}
+                        onChange={value => { updateChartStyleCfg(i => i.autoScroll = value) }} />
+                </FormItem>}
             </>)}
             {chart.type === 'MAP' && renderCollapse('省市区配置', <>
                 {mapLevelTypes.filter(i => i !== 'country')
@@ -153,6 +157,12 @@ const ChartCfgForm = (props: ChartCfgFormProps) => {
                             })
                         }} options={props.sheetColumns.map(i => ({ value: i.id, label: i.desc || i.name }))} />
                     </FormItem>)}
+            </>)}
+            {renderCollapse('其他', <>
+                <FormItem label='隐藏刷新加载提示'>
+                    <Switch defaultValue={false} value={chart.styleCfg?.hideRrefreshTip}
+                        onChange={value => { updateChartStyleCfg(i => i.hideRrefreshTip = value) }} />
+                </FormItem>
             </>)}
             {chartComponent && <DynamicCfgForm
                 xColumns={props.xColumns}

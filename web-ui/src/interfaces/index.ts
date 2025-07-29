@@ -355,6 +355,8 @@ interface ChartStyleCfg {
         [key: string]: ColumnKey[] // 表格隐藏列
     }
     renderChartConfig: RenderChartConfig
+    autoScroll?: boolean
+    hideRrefreshTip?: boolean
 }
 
 /**

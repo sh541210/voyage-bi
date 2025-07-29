@@ -70,6 +70,7 @@ public abstract class ChartRequestWebsocket<T> extends JsonWebSocketHandler<Char
                     log.warn("Update query record error", e);
                 }
             });
+            result.getData().setMetadata(null);
             sendResult(session, request, () -> sendData(result));
         });
     }
