@@ -23,6 +23,7 @@ const generateTooltipContent = (component: ChartComponentVO): JSX.Element => {
     const list = component.props.limit
     return (<div>
         <div className=" text-base mb-1">{component.name}</div>
+        <div className=" text-xs mb-1 text-gray-300">{component.description}</div>
         {list.map((value, index) => {
             const xDesc = (Array.isArray(value.x)
                 ? `${value.x[0]} 到 ${value.x[1] === MAX_COLUMN_COUNT ? '多个' : value.x[1]}`
