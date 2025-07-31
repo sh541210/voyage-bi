@@ -51,28 +51,33 @@ public abstract class ChartRequestWebsocket<T> extends JsonWebSocketHandler<Char
             LoginUtils.setUser(user);
         }
         request.setClearMetadata(false);
-        chartService.fetchData(request, result -> {
-            record.setState(result.isSuccess() ? 1 : -1);
-            record.setMessage(result.getMessage());
-            DataSet data = result.getData();
-            if (data != null) {
-                copyAToBIgnoreId(data.getMetadata(), record);
-                record.setHitCache(data.isHitCache());
-                record.setDatasourceId(data.getDatasourceId());
-                record.setDataSheetId(data.getDatasheetId());
-                record.setEnv(data.getEnv());
-            }
-            record.setEndTime(System.currentTimeMillis());
-            executor.submit(() -> {
-                try {
-                    queryRecordMapper.updateById(record);
-                } catch (Exception e) {
-                    log.warn("Update query record error", e);
+        try {
+            chartService.fetchData(request, result -> {
+                record.setState(result.isSuccess() ? 1 : -1);
+                record.setMessage(result.getMessage());
+                DataSet data = result.getData();
+                if (data != null) {
+                    copyAToBIgnoreId(data.getMetadata(), record);
+                    record.setHitCache(data.isHitCache());
+                    record.setDatasourceId(data.getDatasourceId());
+                    record.setDataSheetId(data.getDatasheetId());
+                    record.setEnv(data.getEnv());
                 }
+                record.setEndTime(System.currentTimeMillis());
+                executor.submit(() -> {
+                    try {
+                        queryRecordMapper.updateById(record);
+                    } catch (Exception e) {
+                        log.warn("Update query record error", e);
+                    }
+                });
+                result.getData().setMetadata(null);
+                sendResult(session, request, () -> sendData(result));
             });
-            result.getData().setMetadata(null);
-            sendResult(session, request, () -> sendData(result));
-        });
+        } catch (Exception e) {
+            sendResult(session, request, () -> sendData(DataResult.failed(e)));
+            log.error("Fetch data error", e);
+        }
     }
 
     abstract T sendData(DataResult dataResult);

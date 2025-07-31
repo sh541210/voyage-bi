@@ -126,7 +126,7 @@ const ChartCfgForm = (props: ChartCfgFormProps) => {
                         onChange={value => updateChartStyleCfg(i => i.paginationType = value as PaginationtMode)}
                         options={[{ value: 'BACK', label: '前端' }, { value: 'FRONT', label: '后端' }]} />
                 </FormItem>}
-                {!chart.styleCfg.hidePagination && <FormItem label='分页数'>
+                {<FormItem label={!chart.styleCfg.hidePagination ? '分页数' : '显示数'}>
                     <InputNumber<number> min={1} value={chart.styleCfg.pageSize}
                         onChange={(value: number | null) => updateChartStyleCfg(i => i.pageSize = value)} />
                 </FormItem>}
