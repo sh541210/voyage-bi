@@ -356,7 +356,7 @@ interface ChartStyleCfg {
     }
     renderChartConfig: RenderChartConfig
     autoScroll?: boolean
-    hideRrefreshTip?: boolean
+    hideRefreshTip?: boolean
 }
 
 /**

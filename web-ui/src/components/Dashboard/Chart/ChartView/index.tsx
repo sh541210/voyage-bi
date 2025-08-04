@@ -303,12 +303,12 @@ const ChartView = (props: ChartViewProps) => {
                         onChange={types => setChartType(types[0])}
                     />
                 </div> : <></>}
-            {(!props.chartStyleCfg.hideRrefreshTip && loading) && renderEmpty(<>
+            {((!props.chartStyleCfg.hideRefreshTip || !dataResult) && loading) && renderEmpty(<>
                 <LoadingOutlined className=' text-4xl font-thin mb-2' />
                 <div>数据加载中</div>
             </>)}
             <div className={classNames('h-full w-full relative',
-                !props.chartStyleCfg.hideRrefreshTip && loading && 'hidden'
+                !props.chartStyleCfg.hideRefreshTip && loading && 'hidden'
             )}>
                 {content}
             </div>

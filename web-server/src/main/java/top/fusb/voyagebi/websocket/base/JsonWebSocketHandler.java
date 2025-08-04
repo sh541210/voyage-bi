@@ -17,11 +17,14 @@ import top.fusb.voyagebi.utils.JacksonUtils;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Slf4j
 public abstract class JsonWebSocketHandler<T extends WebSocketRequest, R> extends TextWebSocketHandler {
+    protected final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     static {
@@ -47,15 +50,17 @@ public abstract class JsonWebSocketHandler<T extends WebSocketRequest, R> extend
     public abstract String path();
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         // 连接关闭后
         log.info(path() + " Connection closed, session Id: " + session.getId());
+        sessions.remove(session.getId());
     }
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    public void afterConnectionEstablished(WebSocketSession session) {
         // 连接建立后
         log.info(path() + " Connection established, session Id: " + session.getId());
+        sessions.put(session.getId(), session);
     }
 
     public abstract void handleRequest(WebSocketSession session, T request);
@@ -77,10 +82,12 @@ public abstract class JsonWebSocketHandler<T extends WebSocketRequest, R> extend
     }
 
     private void sendMessage(WebSocketSession session, TextMessage message) {
-        if (session.isOpen()) try {
-            session.sendMessage(message);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (session.isOpen()) {
+            try {
+                session.sendMessage(message);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

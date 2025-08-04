@@ -19,4 +19,9 @@ public interface DashboardShareMapper extends BaseMapper<DashboardShare> {
                 .in(DashboardShare::getAppId, appIds))
                 .stream().collect(Collectors.groupingBy(DashboardShare::getAppId));
     }
+
+    default Long getDashboardIdByShareKey(String shareKey) {
+        return selectValue(DashboardShare::getDashboardId,
+                i -> i.eq(DashboardShare::getKey, shareKey));
+    }
 }

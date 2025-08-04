@@ -17,6 +17,7 @@ import top.fusb.voyagebi.websocket.base.JsonWebSocketHandler;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
 
 import static org.example.server.web.utils.BeanUtils.copyAToBIgnoreId;
 
@@ -29,6 +30,21 @@ public abstract class ChartRequestWebsocket<T> extends JsonWebSocketHandler<Char
     @Autowired
     private LoginModuleContext context;
     private static final ExecutorService executor = Executors.newCachedThreadPool();
+
+    public void sendMessage(Function<String, Map<Long, T>> mapper) {
+        sessions.values().forEach(session -> {
+            Map<String, Object> attributes = session.getAttributes();
+            Object shareKey = attributes.get("shareKey");
+            if (shareKey != null) {
+                Map<Long, T> results = mapper.apply(shareKey.toString());
+                for (Map.Entry<Long, T> entry : results.entrySet()) {
+                    ChartDataRequest request = new ChartDataRequest();
+                    request.setChartId(entry.getKey());
+                    sendResult(session, request, entry::getValue);
+                }
+            }
+        });
+    }
 
     public ChartRequestWebsocket(Class<ChartDataRequest> requestClass) {
         super(requestClass);

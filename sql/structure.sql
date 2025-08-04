@@ -231,7 +231,7 @@ CREATE TABLE IF NOT EXISTS `bi_query_record` (
 CREATE TABLE IF NOT EXISTS `bi_system_config` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '配置项ID',
   `config_key` varchar(255) NOT NULL COMMENT '配置项名称，唯一',
-  `config_value` text NOT NULL COMMENT '配置项值',
+  `config_value` JSON COMMENT '配置项值',
   `config_description` varchar(255) DEFAULT NULL COMMENT '配置项描述',
   `data_type` varchar(50) NOT NULL COMMENT '配置项数据类型（如：String, Integer, Boolean, JSON等）',
   `enabled` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否启用：0-禁用, 1-启用',

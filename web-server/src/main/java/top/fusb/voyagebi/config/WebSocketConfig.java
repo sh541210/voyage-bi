@@ -55,6 +55,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
                             return true;
                         }
                     }
+                    attributes.putAll(params);
                     if(params.containsKey("shareToken") && params.containsKey("shareKey")) {
                         String shareToken = params.get("shareToken");
                         String shareKey = params.get("shareKey");

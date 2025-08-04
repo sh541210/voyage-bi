@@ -160,8 +160,8 @@ const ChartCfgForm = (props: ChartCfgFormProps) => {
             </>)}
             {renderCollapse('其他', <>
                 <FormItem label='隐藏刷新加载提示'>
-                    <Switch defaultValue={false} value={chart.styleCfg?.hideRrefreshTip}
-                        onChange={value => { updateChartStyleCfg(i => i.hideRrefreshTip = value) }} />
+                    <Switch defaultValue={false} value={chart.styleCfg?.hideRefreshTip}
+                        onChange={value => { updateChartStyleCfg(i => i.hideRefreshTip = value) }} />
                 </FormItem>
             </>)}
             {chartComponent && <DynamicCfgForm
