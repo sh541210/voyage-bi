@@ -13,9 +13,13 @@ public class MysqlDataClient extends JdbcDataClient {
 
     private void setDefaultConnectionParams() {
         String sessionVariables = param.getParams().get("sessionVariables");
-        if (sessionVariables == null) sessionVariables = "";
-        sessionVariables += "information_schema_stats_expiry=0";
-        param.getParams().put("sessionVariables", sessionVariables);
+        if (param.getVersion() != null && !param.getVersion().startsWith("5")) {
+            if (sessionVariables == null) {
+                sessionVariables = "";
+            }
+            sessionVariables += "information_schema_stats_expiry=0";
+            param.getParams().put("sessionVariables", sessionVariables);
+        }
     }
 
     @Override

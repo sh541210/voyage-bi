@@ -60,7 +60,7 @@ public class TestCase1 {
     @Test
     public void test5() {
         List<Map<String, Object>> john = JdbcUtils.query(new RdsParam(
-                        "jdbc:mysql://localhost:3306/test", "root", "root",
+                        "jdbc:mysql://localhost:3306/test", "root", "root", "",
                         Map.of("sessionVariables", "information_schema_stats_expiry=0"))
                 , "SELECT UNIX_TIMESTAMP(MAX(IFNULL(UPDATE_TIME, CREATE_TIME)))*1000 AS Update_time\n" +
                         "FROM INFORMATION_SCHEMA.TABLES\n" +

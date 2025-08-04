@@ -1,6 +1,7 @@
 import { message } from 'antd'
-import axios, { AxiosRequestConfig } from 'axios'
+import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 import { setupInterceptors } from './login/interceptor'
+import { showErrorOnce } from './common/error'
 
 const service = setupInterceptors(axios.create({
   baseURL: '/api',
@@ -21,8 +22,11 @@ const requestResult = async <T = any>(config: RequestConfig): Promise<Result<T>>
   try {
     const { data } = await service.request<Result>(config)
     return data
-  } catch (error) {
-    const message = (error as any).message || 'Request error'
+  } catch (error: any) {
+    let message = (error as any).message || 'Request error'
+    if (error.response.status === 504) {
+      message = '请求超时'
+    }
     const res: Result<any> = {
       code: "-1",
       message,
@@ -40,7 +44,11 @@ const requstData = async <T = any>(config: RequestConfig): Promise<T> => {
         res(result.data)
       } else {
         if (result.code !== '101' && !config.ignoreTip) {
-          message.error(result.message)
+          showErrorOnce({
+            message: result.message,
+            duration: 3000,
+            onShow: (msg) => message.error(msg),
+          });
         }
         rej(result.message)
       }

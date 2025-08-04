@@ -61,7 +61,7 @@ public class JdbcUtils {
         return result;
     }
 
-    public static QueryDataSet getDataSet(RdsParam rdsParam, String sql) {
+    public static QueryDataSet queryForDataSet(RdsParam rdsParam, String sql) {
         List<List<Object>> rows = new ArrayList<>();
         List<String> columnNames = new ArrayList<>();
 
@@ -73,7 +73,9 @@ public class JdbcUtils {
             int columnCount = metaData.getColumnCount();
 
             // 获取列名列表
-            for (int i = 1; i <= columnCount; i++) columnNames.add(metaData.getColumnLabel(i));
+            for (int i = 1; i <= columnCount; i++) {
+                columnNames.add(metaData.getColumnLabel(i));
+            }
 
             // 获取数据行
             while (rs.next()) {

@@ -2,6 +2,7 @@ import { message } from 'antd';
 import { AxiosInstance, history } from 'umi';
 import { clearToken, getUserToken } from './base';
 import SignUtils from '@/utils/common/sign'
+import { showErrorOnce } from '../common/error';
 
 let hasShownLoginError = false; // 用于标记是否已经显示过未登录提示
 
@@ -30,29 +31,32 @@ export const setupInterceptors = (service: AxiosInstance) => {
             // 这里处理未登录的情况
             if (response.data && response.data.code === '101') {
                 // 只显示一次未登录提示，避免重复提示
-                if (!hasShownLoginError) {
-                    let token = getUserToken()
-                    if (token) {
-                        clearToken()
-                        message.error('登录状态无效，请重新登录。');
-                        // 清除本地的 token
-                        localStorage.removeItem('token');
-                    } else {
-                        message.error('请先登录')
-                    }
-                    hasShownLoginError = true;
-                    let redirect = window.location.hash.replace(/^#/, '')
-                    if (redirect.startsWith("/login")) {
-                        redirect = redirect.replace('/login', '');
-                    } else {
-                        redirect = `?redirect=${redirect}`
-                    }
-                    // 跳转到登录页面，保存当前路径以便登录后返回
-                    history.push(`/login${redirect}`);
-                    setTimeout(() => {
-                        hasShownLoginError = false
-                    }, 500)
-                }
+                const token = getUserToken();
+                showErrorOnce({
+                    key: 'login-invalid', // 给定固定 key，用于去重
+                    message: token ? '登录状态无效，请重新登录。' : '请先登录',
+                    duration: 500, // 500ms 内相同错误只显示一次
+                    onShow: (msg) => {
+                        message.error(msg);
+
+                        // 清除 token
+                        if (token) {
+                            clearToken();
+                            localStorage.removeItem('token');
+                        }
+
+                        // 计算 redirect 路径
+                        let redirect = window.location.hash.replace(/^#/, '');
+                        if (redirect.startsWith('/login')) {
+                            redirect = redirect.replace('/login', '');
+                        } else {
+                            redirect = `?redirect=${redirect}`;
+                        }
+
+                        // 跳转登录页
+                        history.push(`/login${redirect}`);
+                    },
+                });
             }
             // 返回正常的响应
             return response;

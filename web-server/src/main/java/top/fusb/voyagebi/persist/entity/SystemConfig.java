@@ -1,19 +1,22 @@
 package top.fusb.voyagebi.persist.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.example.server.mybatis.BaseEntity;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("bi_system_config")
+@TableName(value = "bi_system_config", autoResultMap = true)
 public class SystemConfig extends BaseEntity<SystemConfig> {
     /** 配置项名称，唯一 */
     private String configKey;
 
     /** 配置项值 */
-    private String configValue;
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private Object configValue;
 
     /** 配置项描述 */
     private String configDescription;

@@ -58,6 +58,7 @@ const DatasourcePage = () => {
                 columns={[{ dataIndex: 'url', title: '数据库连接' },
                 { dataIndex: 'username', title: '用户名' },
                 { dataIndex: 'password', title: '密码', valueType: 'password' },
+                { dataIndex: 'version', title: '版本' },
                 ].map(i => ({ ...i, readonly: readOnly }))}
                 onFinish={async (form: any) => {
                     return request.PUT('/datasource/cfg', { ...form, env, id: datasource?.id }).then(() => {

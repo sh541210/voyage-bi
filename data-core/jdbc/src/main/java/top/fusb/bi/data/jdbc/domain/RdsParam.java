@@ -16,11 +16,14 @@ public class RdsParam implements Serializable {
     private String url;
     private String username;
     private String password;
+    private String version;
     private Map<String, String> params = new HashMap<>();
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         RdsParam rdsParam = (RdsParam) o;
         return Objects.equals(url, rdsParam.url) && Objects.equals(username, rdsParam.username) && Objects.equals(password, rdsParam.password) && Objects.equals(params, rdsParam.params);
     }

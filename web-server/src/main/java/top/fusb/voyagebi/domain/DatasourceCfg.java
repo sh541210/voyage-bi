@@ -33,4 +33,6 @@ public class DatasourceCfg implements Serializable {
      * 该字段存储用于连接数据库的密码
      */
     private String password;
+
+    private String version;
 }

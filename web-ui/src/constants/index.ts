@@ -43,7 +43,7 @@ export const getDefaultScript = (code: string, type: ChartComponentType) => {
         }`
         case 'react': return `
     // 可使用 <MyIcon name={'table'}/>、classNames
-    const { useEffect, useRef } = React
+    const { useEffect, useState, useRef } = React
     const ${code} = ({ args }) => {
         // 数据、元数据、配置
         const { data: { columns, rows, x, y }, chartType, mobile, transpose, key, dark, renderConfig } = args

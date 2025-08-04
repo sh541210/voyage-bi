@@ -94,6 +94,6 @@ public abstract class JdbcDataClient extends AbstractDataClient implements DataC
     @Override
     protected QueryDataSet queryForDataSet(String sql) {
         log.info("查询SQL: {}", sql);
-        return JdbcUtils.getDataSet(param, sql);
+        return JdbcUtils.queryForDataSet(param, sql);
     }
 }
