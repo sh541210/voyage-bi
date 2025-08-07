@@ -146,6 +146,10 @@ const ChartCfgForm = (props: ChartCfgFormProps) => {
                     <Switch defaultValue={false} value={chart.styleCfg?.autoScroll}
                         onChange={value => { updateChartStyleCfg(i => i.autoScroll = value) }} />
                 </FormItem>}
+                {chart.styleCfg?.hidePagination && <FormItem label='滚动间隔(ms)'>
+                    <InputNumber defaultValue={100} value={chart.styleCfg?.scrollInterval}
+                        onChange={(value: number | null) => { updateChartStyleCfg(i => i.scrollInterval = value) }} />
+                </FormItem>}
             </>)}
             {chart.type === 'MAP' && renderCollapse('省市区配置', <>
                 {mapLevelTypes.filter(i => i !== 'country')

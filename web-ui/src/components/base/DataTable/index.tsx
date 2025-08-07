@@ -35,7 +35,10 @@ interface DataTableProps {
 const DataTable: React.FC<DataTableProps> = ({ data: { columns, rows }, pagination, size = 'small',
   actions, showIndex, indexColumnName, highlights,
   onColClick, sortedIndexes, onSortChange, hideColumnIndexes, scrollOptions = { auto: false } }) => {
-  const { auto = false, loop = false, loopCount = 3, interval = 100, step = 2 } = scrollOptions
+  const { auto = false, loop = false,
+    loopCount = 3,
+    interval = 100,
+    step = 2 } = scrollOptions
   const [currentPage, setCurrentPage] = useState(1);
   const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
   const [hoveredColIndex, setHoveredColIndex] = useState<number | null>(null);
@@ -100,7 +103,6 @@ const DataTable: React.FC<DataTableProps> = ({ data: { columns, rows }, paginati
 
     let lastIndex = -1;
     const scrollStep = 1;
-    const interval = 50;
 
     const timer = setInterval(() => {
       const { scrollTop, scrollHeight, clientHeight } = container;

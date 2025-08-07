@@ -215,7 +215,11 @@ const ChartView = (props: ChartViewProps) => {
             const hideIndexes = toIndexes(allColumns, chartStyleCfg.tableHideKeys?.[mobile ? 'mobile' : 'pc'] || [], 'key')
             return <div className="p-2 relative h-full w-full chart-table">
                 <DataTable
-                    scrollOptions={{ auto: props.chartStyleCfg.autoScroll, loop: true }}
+                    scrollOptions={{
+                        auto: props.chartStyleCfg.autoScroll,
+                        interval: props.chartStyleCfg.scrollInterval || 100,
+                        loop: true
+                    }}
                     onColClick={(rowIndex, colIndex, _) => props.onTableClick?.(rowIndex, colIndex, undefined)}
                     highlights={highlights}
                     sortedIndexes={sortedIndexes}
