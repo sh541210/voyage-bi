@@ -18,6 +18,7 @@ interface DataTableProps {
     interval?: number;       // 间隔 ms
     step?: number;           // 步长 px
     loop?: boolean;          // 是否循环
+    loopCount?: number
   }
   size?: 'mini' | 'small';
   pagination?: { pageSize: number; hidden?: boolean, total?: number };
@@ -34,7 +35,7 @@ interface DataTableProps {
 const DataTable: React.FC<DataTableProps> = ({ data: { columns, rows }, pagination, size = 'small',
   actions, showIndex, indexColumnName, highlights,
   onColClick, sortedIndexes, onSortChange, hideColumnIndexes, scrollOptions = { auto: false } }) => {
-  const { auto = false, loop = false, interval = 100, step = 2 } = scrollOptions
+  const { auto = false, loop = false, loopCount = 3, interval = 100, step = 2 } = scrollOptions
   const [currentPage, setCurrentPage] = useState(1);
   const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
   const [hoveredColIndex, setHoveredColIndex] = useState<number | null>(null);
@@ -97,30 +98,41 @@ const DataTable: React.FC<DataTableProps> = ({ data: { columns, rows }, paginati
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    let currentClickIndex = 0;
-    let scrollStep = 40;
-    onColClick?.(0, 0, null)
+    let lastIndex = -1;
+    const scrollStep = 1;
+    const interval = 50;
 
-    const intervalId = setInterval(() => {
+    const timer = setInterval(() => {
       const { scrollTop, scrollHeight, clientHeight } = container;
-      if (scrollTop + clientHeight >= scrollHeight - 2) {
+
+      // 到底部自动回滚
+      if (scrollTop + clientHeight >= scrollHeight - 5) {
         container.scrollTo({ top: 0, behavior: 'auto' });
-        currentClickIndex = 0;
-        scrollStep = 0;
-      } else {
-        container.scrollBy({ top: 1, behavior: 'smooth' });
-        scrollStep++;
-        if (scrollStep >= 40) {
-          // 滚动完成一行时模拟点击
-          onColClick?.(currentClickIndex % rows.length, 0, rows[currentClickIndex % rows.length][0]);
-          currentClickIndex++;
-          scrollStep = 0;
+        lastIndex = -1;
+        return;
+      }
+
+      // 执行滚动
+      container.scrollBy({ top: scrollStep, behavior: 'smooth' });
+
+      // 获取当前 scrollTop，匹配哪一行最接近 scrollTop
+      for (let i = 0; i < rows.length * loopCount; i++) {
+        const row = container.querySelector(`.row${i}`);
+        if (!row) continue;
+        const rowTopInContainer = row.getBoundingClientRect().top - container.getBoundingClientRect().top;
+        if (Math.abs(rowTopInContainer) <= 1) {
+          if (lastIndex !== i) {
+            lastIndex = i;
+            const index = i % rows.length
+            onColClick?.(index, 0, rows[index]);
+          }
+          break;
         }
       }
-    }, 100);
+    }, interval);
 
-    return () => clearInterval(intervalId);
-  }, [pagination?.hidden, auto]);
+    return () => clearInterval(timer);
+  }, [pagination?.hidden, auto, rows]);
 
   const renderPagination = () => {
     if (hiddenPagination) {
@@ -293,7 +305,7 @@ const DataTable: React.FC<DataTableProps> = ({ data: { columns, rows }, paginati
 
     const dataToRender = pagination?.hidden
       ? (auto && loop
-        ? Array.from({ length: currentPage * pageSize }, (_, i) => rows[i % rows.length]) // 循环
+        ? Array.from({ length: loopCount * rows.length }, (_, i) => rows[i % rows.length]) // 循环
         : rows.slice(startIndex, endIndex)) // 懒加载
       : rows.slice(startIndex, endIndex); // 正常分页
 
@@ -306,7 +318,7 @@ const DataTable: React.FC<DataTableProps> = ({ data: { columns, rows }, paginati
       const doms = actions?.(item, realRowIndex);
 
       return (
-        <tr key={rowIndex}>
+        <tr key={rowIndex} className={`row${rowIndex}`}>
           {/* 显示索引列 */}
           {showIndex && (
             <td className={className(realRowIndex, -1, realRowIndex + 1)}>{realRowIndex + 1}</td>
