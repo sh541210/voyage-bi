@@ -10,6 +10,8 @@ import top.fusb.voyagebi.service.SystemConfigService;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.example.server.web.utils.BeanUtils.aToB;
+
 @Service
 @RequiredArgsConstructor
 public class SystemConfigServiceImpl implements SystemConfigService {
@@ -17,9 +19,18 @@ public class SystemConfigServiceImpl implements SystemConfigService {
 
     @Override
     public void modify(SystemConfigValueForm form) {
-        systemConfigMapper.updateBy(
-                i->i.set(SystemConfig::getConfigValue, form.getValue())
-                .eq(SystemConfig::getConfigKey, form.getConfigKey()));
+        SystemConfig config = systemConfigMapper.selectOne(i ->
+                i.eq(SystemConfig::getConfigKey, form.getConfigKey()));
+        if (config != null) {
+            config.setConfigValue(form.getValue());
+            systemConfigMapper.updateById(config);
+        } else {
+            systemConfigMapper.insert(aToB(form, SystemConfig.class,
+                    (a, b) -> {
+                        b.setConfigValue(a.getValue());
+                        b.setDataType("string");
+                    }));
+        }
     }
 
     @Override

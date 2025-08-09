@@ -25,13 +25,15 @@ const EchartsMapView = (props: ChartViewProps & {
     const global = useModel('global')
     const [loadState, setLoadState] = useState<number>(0)
     const current = (state: MapRgistery) => `${state.codes[state.level]}`
+    const { systemConfig } = useModel('system')
 
     const registerMap = async (state: MapRgistery) => {
         try {
             const key = current(state)
             // if (!registeredMaps.has(key)) {
             setLoadState(0)
-            const mapJson = await getGeoJson(state.codes)
+            const mapJson = await getGeoJson(systemConfig.chartsJsonAddr ||
+                'http://file.geojson.cn/china/1.6.2/', state.codes)
             console.log(`${props.chartId}加载${state.names[state.level]}[${key}}]地图`)
             // @ts-ignore
             echarts.registerMap(key, mapJson);

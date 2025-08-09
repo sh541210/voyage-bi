@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react"
 interface SystemConfig {
     iconFontJsUrl: string,
     homeDashboardKey?: string,
+    chartsJsonAddr?: string,
     tableHighlights: ({
         name: string
         label?: string

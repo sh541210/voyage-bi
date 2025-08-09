@@ -1,8 +1,6 @@
 import { request } from "@umijs/max"
 
-
-const baseUrl = 'http://file.geojson.cn/china/1.6.2/'
-export const getGeoJson = async (code: number[]) => {
+export const getGeoJson = async (baseUrl: string, code: number[]) => {
     let url = baseUrl
     if (code.length == 1) {
         url += 'china.json'

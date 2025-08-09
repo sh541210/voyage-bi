@@ -22,6 +22,12 @@ const SystemConfig = () => {
                         { configKey: 'homeDashboardKey', value: e.target.value })
                 }} />
             </FormItem>
+            <FormItem label='地图json地址' >
+                <Input variant='filled' defaultValue={systemConfig?.chartsJsonAddr} onChange={e => {
+                    request.PUT('/system/config/value',
+                        { configKey: 'chartsJsonAddr', value: e.target.value })
+                }} />
+            </FormItem>
         </>)}
     </div>
 }
