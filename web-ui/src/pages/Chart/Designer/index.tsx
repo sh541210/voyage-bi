@@ -527,7 +527,7 @@ const ChartEditor = () => {
                                             renderEmpty('暂无变量', ' text-sm')}
                                     </ReactSortable>
                                     <div className=" basis-[300px] text-gray-500 dark:text-gray-200 text-sm rounded-sm dark:border-antdDarkBorder border-t pt-2">
-                                        <div className="text-black text-antdDarkColorFillSecondary dark:text-gray-200 mb-2 font-bold text-sm px-2">参数</div>
+                                        <div className="text-black text-antdDarkColorFillSecondary dark:text-gray-200 mb-2 font-bold text-sm px-2">默认参数</div>
                                         <ReactSortable
                                             group={{ name: 'variableSortable', 'pull': () => true }}
                                             list={Object.entries(chart.cfg.parameterConditions)?.map(([name, value]) => ({ id: name, name, value }))}
@@ -553,6 +553,7 @@ const ChartEditor = () => {
                         background: token.colorBgLayout
                     }} className="w-full p-4 flex-1 min-h-0 flex flex-col">
                         {themeCfg && chart.type ? <ChartView
+                            chartParameters={{}}
                             onDataUpdate={fetchData}
                             dataRequest={{
                                 source: 'develop',

@@ -351,6 +351,7 @@ const ChartGrid = (props: ChartGridPros) => {
                 <div className="w-full h-full relative overflow-hidden" style={{ flex: 1 }}>
                     <div className={classNames('chart-view-container h-full relative bg-transparent')}>
                         {filterValues && <ChartView
+                            chartParameters={bus.passParameterValues?.[chart.id]}
                             chartId={chart.id}
                             onDataUpdate={(request, callback) => {
                                 fetchData(request, dataResult => {

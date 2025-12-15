@@ -128,6 +128,7 @@ const ChartComponentScriptEditor = () => {
                                     onChange={setDownSplitSize}
                                 >
                                     <ChartView
+                                        chartParameters={{}}
                                         chartType={chartComponent.code}
                                         onDataUpdate={async () => ({ success: true, data: mockData.data })}
                                         // @ts-ignore

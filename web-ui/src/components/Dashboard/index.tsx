@@ -45,10 +45,10 @@ const Dashboard = (props: DashboardProps) => {
     const [globalFilterValues, setGlobalFilterValues] = useState<Record<string, any>>()
     let setupGlobalFilterForm = props.setupGlobalFilterForm || (i => i)
     const dashboardStyleCfg = { ...theme?.dashboardStyleCfg, ...dashboard.styleCfg }
-    useLess(theme.dashboardStyleCfg.css + 
+    useLess(theme.dashboardStyleCfg.css +
         // (displayMode === 'develop' ? '' : 
-            dashboardStyleCfg?.css)
-        // )
+        dashboardStyleCfg?.css)
+    // )
     const [modal, modalContext] = useModal('show-data')
     const { scrollRef } = useScrollRestoration()
 

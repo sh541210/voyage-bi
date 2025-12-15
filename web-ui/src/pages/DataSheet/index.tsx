@@ -2,11 +2,11 @@ import DataTable from "@/components/base/DataTable"
 import request from "@/utils/request"
 import { CloseOutlined, CodeOutlined, LeftSquareOutlined, ReloadOutlined, PlaySquareOutlined } from "@ant-design/icons"
 import { message } from "antd"
-import { useMemo, useState } from "react"
+import { useMemo, useState, useRef } from "react"
 import SplitPane from "react-split-pane"
 import TreeCommonLayout from "../base/TreeCommonLayout"
 import { genKey, useFileNodes } from "@/utils/biz"
-import { SheetPreview, SheetSchema } from "./SheetView"
+import { SheetPreview, SheetSchema, SheetSchemaRef } from "./SheetView"
 import { fixTreeSelect, recordToObjectArray } from "@/utils/common/common"
 import { EditorContainer } from "@/components/base/Editor"
 import FormModal from "@/components/base/FormModal"
@@ -36,6 +36,8 @@ const DataSheetPage = () => {
     const { treeSelectData, toRefId, getName } = useFileNodes('datasource')
     const [mode, setMode] = useState<Mode>(defaultMode)
     const [loading, setLoading] = useState<boolean>(false)
+    // SheetSchema 的 ref，用于外部触发 fetch
+    const schemaRef = useRef<SheetSchemaRef>(null)
 
     const query = async (datasourceId: number, sqlText: string | undefined, parameters?: any) => {
         if (!sheet) {
@@ -200,6 +202,7 @@ const DataSheetPage = () => {
             [<ReloadOutlined key='更新字段'
                 onClick={() => sheet && request.PUT(`data-sheet/columns?dataSheetId=${sheet.id}`).then(() => {
                     message.success('更新成功！')
+                    schemaRef.current?.fetch()
                 })} />,
             <CodeOutlined key={'开发'} onClick={() => setMode('dev')} />]
             : [<LeftSquareOutlined key={'返回预览'} onClick={() => setMode('preview')} />])
@@ -207,7 +210,7 @@ const DataSheetPage = () => {
         tabProps={{ size: 'small', style: { height: 'calc(100vh - 155px)' }, }}
         tabList={(!sheet || mode === 'dev') ? undefined : [{
             key: 'schema', tab: '数据结构',
-            children: <SheetSchema dataSheetId={sheet.id} />
+            children: <SheetSchema ref={schemaRef} dataSheetId={sheet.id} />
         }, {
             key: 'preview', tab: '数据预览',
             children: <SheetPreview sheet={sheet} />

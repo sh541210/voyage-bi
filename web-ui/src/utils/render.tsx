@@ -96,7 +96,7 @@ export const renderLoading = (title: JSX.Element | string) => {
 
 export const renderEmpty = (dom?: JSX.Element | string, className?: string) => {
     return <div className="flex flex-col justify-center text-center
-    text-gray-700 p-2 overflow-hidden h-full">
+    text-gray-700 p-2 overflow-hidden h-full empty-data">
         <div className={classNames('select-none text-center text-md text-gray-400 w-full whitespace-break-spaces overflow-hidden', className)}>
             {dom}
         </div>

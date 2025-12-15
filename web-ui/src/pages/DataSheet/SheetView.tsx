@@ -1,6 +1,6 @@
 import request from "@/utils/request"
 import { ProTable } from "@ant-design/pro-components"
-import { useEffect, useState } from "react"
+import { useEffect, useState, forwardRef, useImperativeHandle } from "react"
 import DataTable from "@/components/base/DataTable"
 import { Button } from "antd"
 import FormModal from "@/components/base/FormModal"
@@ -11,13 +11,20 @@ import { renderActive, renderEmpty, renderLoading } from "@/utils/render"
 import { formatDateTime } from "@/utils/common/date"
 import { genKey } from "@/utils/biz"
 
-export const SheetSchema = (props: { dataSheetId: number }) => {
+export interface SheetSchemaRef {
+    fetch: () => void
+}
+
+export const SheetSchema = forwardRef<SheetSchemaRef, { dataSheetId: number }>((props, ref) => {
     const { dataSheetId } = props
     const [dataSheet, setDataSheet] = useState<DataSheetDetailVO>()
 
     const fetch = () => request.GET<DataSheetDetailVO>(`/data-sheet/detail?id=${dataSheetId}`).then(data => {
         setDataSheet(data)
     })
+    useImperativeHandle(ref, () => ({
+        fetch
+    }), [fetch])
     useEffect(() => { fetch() }, [dataSheetId])
 
     const renderButton = (record: DataSheetColumnVO) => {
@@ -74,7 +81,7 @@ export const SheetSchema = (props: { dataSheetId: number }) => {
             search={false}
             size="small" />
     </div>
-}
+})
 
 export const SheetPreview = (props: { sheet: DataSheetVO }) => {
     const { sheet: { id, dataUpdateTime } } = props
