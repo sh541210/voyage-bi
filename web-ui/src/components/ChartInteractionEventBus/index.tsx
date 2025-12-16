@@ -140,7 +140,6 @@ export const useChartInteractionEventBus = (props: ChartInteractionEventBusProps
             width={props.mode === 'mobile' ? '90%' : '60%'}
             ref={modalRef}
             title={modalChart?.chart?.name}>{modalChart?.chart && <ChartView
-                chartParameters={{}}
                 chartId={modalChart.chart.id}
                 dataRequest={modalChart.dataRequest}
                 onDataUpdate={props.onDataUpdate}

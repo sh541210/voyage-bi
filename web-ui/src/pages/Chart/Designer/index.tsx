@@ -553,7 +553,6 @@ const ChartEditor = () => {
                         background: token.colorBgLayout
                     }} className="w-full p-4 flex-1 min-h-0 flex flex-col">
                         {themeCfg && chart.type ? <ChartView
-                            chartParameters={{}}
                             onDataUpdate={fetchData}
                             dataRequest={{
                                 source: 'develop',

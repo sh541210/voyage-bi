@@ -34,13 +34,12 @@ export interface ChartViewProps {
     dataRequest: ChartDataRequest
     onDataUpdate: (dataRequest: ChartDataRequest, callback: (result: DataResult) => void) => void
     chartComponent?: ChartComponentVO
-    chartParameters: Record<string, any>
 }
 
 const ChartView = (props: ChartViewProps) => {
     const { ref, width } = useContainerWidth()
     const { systemConfig, getChartComponent } = useModel('system')
-    const { chartStyleCfg, mobile = false, chartComponent, chartParameters } = props
+    const { chartStyleCfg, mobile = false, chartComponent } = props
     const [dataResult, setDataResult] = useState<DataResult>()
     const [chartType, setChartType] = useState<ChartType>(props.chartType)
     const { dark } = useModel('global')
@@ -149,7 +148,6 @@ const ChartView = (props: ChartViewProps) => {
             // 执行渲染代码的第一个阶段
             config = execTs(script, {
                 data, chartType, mobile, dark,
-                chartParameters,
                 echarts,
                 renderConfig: props.chartStyleCfg.renderChartConfig || {},
                 transpose: (matrix: any[][]) => matrix[0]?.map((_, colIndex) => matrix.map(row => row[colIndex]))
@@ -165,7 +163,6 @@ const ChartView = (props: ChartViewProps) => {
         try {
             // 执行渲染代码的第二阶段
             config = execTs(props.renderCode, {
-                chartParameters,
                 config,
                 data, chartType, mobile, dark,
                 echarts,
@@ -254,6 +251,7 @@ const ChartView = (props: ChartViewProps) => {
                     args={{
                         yColumns: props.yColumns, xColumns: props.xColumns,
                         data, chartType, mobile, dark,
+                        chartParameters: props.dataRequest?.parameters,
                         renderConfig: props.chartStyleCfg.renderChartConfig || {}
                     }} />;
             }

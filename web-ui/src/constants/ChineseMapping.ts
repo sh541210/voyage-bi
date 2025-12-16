@@ -38,7 +38,7 @@ export const DATE_FORMATS_LABEL: Record<DateFormat, string> = {
     MINUTE: '分钟'
 }
 
-export const COMPONENT_TYPE_LABEL: Record<ComponentType, string> = {
+export const COMPONENT_TYPE_LABEL: Record<ComponentType | 'textarea', string> = {
     date: '日期',
     dateMonth: '月份', dateRange: '日期范围',
     dateMonthRange: '月份范围', input: '输入框',
@@ -46,7 +46,8 @@ export const COMPONENT_TYPE_LABEL: Record<ComponentType, string> = {
     radio: '单选框',
     radioButton: '单选框「按钮」',
     segmented: '分段控制器',
-    cascader: '级联选择器'
+    cascader: '级联选择器',
+    textarea: '文本输入框'
 }
 
 export const VALUE_TYPE_LABEL: Record<ValueType, string> = {
