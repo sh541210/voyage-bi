@@ -68,3 +68,5 @@ export const redirect = () => {
     const redirect = new URLSearchParams(url.substring(url.indexOf('?') + 1))?.get('redirect');
     history.push(redirect || '/home');
 }
+
+export const ENABLE_SMS_LOGIN = false

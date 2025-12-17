@@ -37,6 +37,7 @@ user:
 login:
   token-access:
     enable: true
+  mobile-login: false
 bi:
   sync:
     update_time:

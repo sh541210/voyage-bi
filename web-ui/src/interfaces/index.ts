@@ -50,8 +50,10 @@ interface LoginSuccess {
  * 登录请求，包含用户名和密码。
  */
 interface LoginRequest {
-    username: string // 用户名
-    password: string // 密码
+    username?: string // 用户名
+    password?: string // 密码
+    mobile?: string
+    code?: string
 }
 
 /**
