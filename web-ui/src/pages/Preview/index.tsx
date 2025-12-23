@@ -6,6 +6,8 @@ import { ThemeSwitch } from "@/components/setting/ThemeSwitch"
 import Kanban from "@/components/Kanban"
 import { setShareToken } from "@/utils/login/interceptor"
 import { renderErrorPrint } from "@/utils/render"
+import { getUserToken } from "@/utils/login/base"
+import { ENABLE_SHARE_TOKEN_CHECK } from "@/options"
 
 const DashboardPreview = () => {
     const [params] = useSearchParams()
@@ -15,6 +17,8 @@ const DashboardPreview = () => {
     const hiddenInteractionIcon = params.get('hiddenInteractionIcon') === 'true'
     const { setHiddenInteractionIcon } = useModel('global')
     const { setDark } = useModel('global')
+    const shareToken = params.get('shareToken')
+
     useEffect(() => {
         if (hiddenInteractionIcon) setHiddenInteractionIcon(true)
     }, [hiddenInteractionIcon])
@@ -26,12 +30,9 @@ const DashboardPreview = () => {
     const env = params.get('env')
     const [snapshot, setSnapshot] = useState<DashboardSnapshotVO>()
     const [message, setMessage] = useState<string>()
-    const { setInitialState } = useModel('@@initialState')
+    const { setInitialState, initialState } = useModel('@@initialState')
 
     if (!key) {
-        // setTimeout(() => {
-        //     history.push('/')
-        // }, 1000)
         return <div className="" style={{ padding: '40px', textAlign: 'center' }}>没有找到仪表板/报表</div>
     }
 
@@ -46,9 +47,19 @@ const DashboardPreview = () => {
         const searchParams = new URLSearchParams(history.location.search);
         const shareKey = searchParams.get('key');
         if (shareKey) {
-            const shareToken = await request.POST(`/dashboard/share/token?key=${shareKey}`, null, { ignoreTip: true })
-            setShareToken(shareToken)
-            setInitialState(pre => ({ ...pre, shareToken }))
+            const loginToken = getUserToken()
+            if (loginToken) {
+                setInitialState(pre => ({ ...pre, token: { tokenValue: loginToken, tokenTimeout: 0 } }))
+            }
+            if (ENABLE_SHARE_TOKEN_CHECK) {
+                if (shareToken) {
+                    setShareToken(shareToken)
+                    setInitialState(pre => ({ ...pre, shareToken }))
+                }
+            } else {
+                const shareToken = await request.POST(`/dashboard/share/token?key=${shareKey}`, null, { ignoreTip: true })
+                setShareToken(shareToken)
+            }
         }
         return
     }

@@ -1,8 +1,9 @@
 import React from 'react';
 import { Form, Input, Button, message } from 'antd';
 import LOGO from '@/assets/logo.png'; // 导入 logo 图片
-import { useLogin, ENABLE_SMS_LOGIN } from '@/utils/login/base';
+import { useLogin } from '@/utils/login/base';
 import request from '@/utils/request';
+import { ENABLE_SMS_LOGIN } from '@/options';
 
 const LoginPage: React.FC = () => {
     const { loading, doLogin } = useLogin()

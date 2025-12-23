@@ -45,3 +45,5 @@ bi:
       delay: 60
   cache:
     type: redis
+sa-token:
+  token-name: user-token
