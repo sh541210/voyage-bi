@@ -38,7 +38,7 @@ const useConfig = () => {
             }
         ]
     })
-    const [chartComponents, setChartComopnents] = useState<ChartComponentVO[]>(DEFAULT_COMPONENTS)
+    const [chartComponents, setChartComponents] = useState<ChartComponentVO[]>([])
 
     useEffect(() => {
         if (!initialState) {
@@ -46,7 +46,7 @@ const useConfig = () => {
         }
         request.GET('/system/config/values').then(data => setSystemConfig(pre => ({ ...pre, ...data })))
         request.GET('/chart/component/list')
-            .then(list => setChartComopnents(origin => [...origin, ...list]))
+            .then(list => setChartComponents(origin => [...DEFAULT_COMPONENTS, ...list]))
     }, [initialState])
 
     return {

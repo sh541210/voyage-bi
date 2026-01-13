@@ -38,7 +38,7 @@ export interface ChartViewProps {
 
 const ChartView = (props: ChartViewProps) => {
     const { ref, width } = useContainerWidth()
-    const { systemConfig, getChartComponent } = useModel('system')
+    const { systemConfig, getChartComponent, chartComponents } = useModel('system')
     const { chartStyleCfg, mobile = false, chartComponent } = props
     const [dataResult, setDataResult] = useState<DataResult>()
     const [chartType, setChartType] = useState<ChartType>(props.chartType)
@@ -188,6 +188,9 @@ const ChartView = (props: ChartViewProps) => {
 
     // 图表内容
     const content = useMemo(() => {
+        if (chartComponents.length == 0) {
+            return
+        }
         let chartCp = chartComponent || getChartComponent(chartType)
         if (!dataResult) {
             if (!chartCp?.props.allowEmptyData) {
@@ -291,7 +294,8 @@ const ChartView = (props: ChartViewProps) => {
         props.chartStyleCfg.sortedKeys,
         mobile, width, dark,
         props.chartStyleCfg.renderChartConfig,
-        chartComponent
+        chartComponent,
+        chartComponents
     ])
 
     return <>
