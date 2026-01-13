@@ -59,6 +59,7 @@ const DashboardPreview = () => {
             } else {
                 const shareToken = await request.POST(`/dashboard/share/token?key=${shareKey}`, null, { ignoreTip: true })
                 setShareToken(shareToken)
+                setInitialState(pre => ({ ...pre, shareToken }))
             }
         }
         return
