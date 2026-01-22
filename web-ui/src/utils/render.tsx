@@ -2,7 +2,7 @@ import { MyIcon } from "@/components/base/MyIcon"
 import { DATE_FORMATS_LABEL, FUNCTION_NAME_LABEL } from "@/constants/ChineseMapping"
 import { LoadingOutlined } from "@ant-design/icons"
 import { useModel } from "@umijs/max"
-import { Button, Collapse, Input, InputNumber, Segmented, Select, theme, Tooltip } from "antd"
+import { Button, Collapse, Input, InputNumber, Segmented, Select, Switch, theme, Tooltip } from "antd"
 import TextArea from "antd/es/input/TextArea"
 import classNames from "classnames"
 import { CSSProperties, JSX, ReactNode } from "react"
@@ -80,6 +80,8 @@ export const renderAntdComponent = (componentType: ValueType, props: any) => {
         return <TextArea {...props} onChange={e => props?.onChange(e.target.value)} />
     } else if (componentType === 'digit') {
         return <InputNumber {...props} />
+    } else if (componentType === 'switch') {
+        return <Switch {...props} />
     }
 }
 
@@ -107,8 +109,9 @@ export const renderActive = (dom: JSX.Element | number | string | undefined) => 
     return <span className='text-primaryColor'>{dom}</span>
 }
 
-export const renderToolTipTitle = (name: string, desc?: string | JSX.Element) => {
-    return <div key={name} className="text-ellipsis whitespace-nowrap overflow-hidden select-none cursor-pointer ">
+export const renderToolTipTitle = (name: string | JSX.Element, desc?: string | JSX.Element) => {
+    const keyStr = typeof name === 'string' ? name : (name as any)?.key?.toString() || Math.random().toString()
+    return <div key={keyStr} className="text-ellipsis whitespace-nowrap overflow-hidden select-none cursor-pointer ">
         {desc ? <Tooltip placement='leftTop' mouseEnterDelay={0.3}
             title={desc}>{name}
         </Tooltip> : name}
@@ -133,7 +136,7 @@ export const renderColumnLine = (sortKey: ColumnKey | undefined, column: ColumnL
             {sortKey === column?.key && column.sort?.orderBy && <MyIcon
                 className=" fill-white mr-1" size={15}
                 name={column.sort?.orderBy} />}
-            {renderToolTipTitle(column.alias || column.desc,
+            {renderToolTipTitle(renderChartNameWithParameters(column.alias || column.desc),
                 <div className="flex flex-col gap-2">
                     <div>{column.alias || column.desc} ( {column.name} ) </div>
                     <div>{getExtra(true)}</div>
@@ -146,4 +149,21 @@ export const renderColumnLine = (sortKey: ColumnKey | undefined, column: ColumnL
                 )</div>}
         </div>}
     </div>
+}
+
+export const renderChartNameWithParameters = (name: string) => {
+    const parts = name?.split(/(\$\{[^}]+\})/g) || []
+    return (
+        <span className="whitespace-pre-wrap">
+            {parts.map((part, idx) =>
+                /\$\{([^}]+)\}/.test(part) ? (
+                    <span key={idx} className="text-blue-500">
+                        {part.replace(/\$\{([^}]+)\}/, '$1')}
+                    </span>
+                ) : (
+                    <span key={idx}>{part}</span>
+                )
+            )}
+        </span>
+    )
 }

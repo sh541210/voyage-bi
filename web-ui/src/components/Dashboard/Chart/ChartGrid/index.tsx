@@ -103,9 +103,12 @@ const ChartGrid = (props: ChartGridPros) => {
     const [dataResults, setDataResults] = useState<Record<number, DataResult | undefined>>({})
 
     // 筛选器数据
-    // const [filterValueRecord, setFilterValueRecord] = useState<Record<string, any>>()
-    const [filterValues, setFilterValues] = useState<any>()
-    // const updateValues = (key: string, values: any) => setFilterValueRecord(pre => ({ ...pre, [key]: values }))
+    // const [filterValues, setFilterValues] = useState<any>()
+    const [filterValues, setFilterValues] = useState<{
+        global?: any
+        group?: Record<number, any>
+        chart?: Record<number, any>
+    }>({})
 
     const { dataMode } = useModel('global')
 
@@ -138,8 +141,11 @@ const ChartGrid = (props: ChartGridPros) => {
         [props.dashboardStyleCfg])
 
     // 更新全局筛选器值
-    // useEffect(() => updateValues('global', props.globalFilterValues), [props.globalFilterValues])
-    useEffect(() => setFilterValues((pre: any) => ({ ...pre, ...props.globalFilterValues })), [props.globalFilterValues])
+    useEffect(() => {
+        setFilterValues(pre => ({
+            ...pre, global: props.globalFilterValues || {}
+        }))
+    }, [props.globalFilterValues])
 
     /**
      * 根据图表获取参数
@@ -153,6 +159,13 @@ const ChartGrid = (props: ChartGridPros) => {
      * @returns 参数
      */
     const getFilterParameterValues = (chart: ChartVO, filterValues: any) => {
+        const flatFilterValues = {
+            ...(filterValues?.global || {}),
+            // @ts-ignore
+            ...Object.values(filterValues?.group || {}).reduce((a, b) => ({ ...a, ...b }), {}),
+            // @ts-ignore
+            ...Object.values(filterValues?.chart || {}).reduce((a, b) => ({ ...a, ...b }), {})
+        }
         if (!filterValues) {
             return undefined
         }
@@ -180,7 +193,7 @@ const ChartGrid = (props: ChartGridPros) => {
             // 遍历每个字段
             Object.keys(mappings).forEach(name => {
                 // 根据筛选器名称找到实际值
-                const filterValue = filterValues[cfg.key]
+                const filterValue = flatFilterValues[cfg.key]
                 // 值下标
                 const idx = mappings[name]
                 if (filterValue) {
@@ -250,7 +263,15 @@ const ChartGrid = (props: ChartGridPros) => {
                         <Filters name={`group-${group.id}`}
                             filters={group.cfg.filters}
                             lite={mobile}
-                            onChange={values => setFilterValues((pre: any) => ({ ...pre, ...values }))}
+                            onChange={values => {
+                                setFilterValues(pre => ({
+                                    ...pre,
+                                    group: {
+                                        ...(pre.group || {}),
+                                        [group.id]: values || {}
+                                    }
+                                }))
+                            }}
                         // onChange={values => updateValues(`group-${group.id}`, values)}
                         />}
                 </div>
@@ -283,7 +304,7 @@ const ChartGrid = (props: ChartGridPros) => {
             const individual = !chart.groupId
             const inTab = chart.groupId && (getGroupType(props.dashboardStyleCfg,
                 props.groups.find(i => i.id === chart.groupId) as ChartGroupVO, mode)) === 'TAB'
-            const chartName = replaceVariables(chart.name || '未命名图表', bus.passParameterValues?.[chart.id])
+            const chartName = replaceVariables(chart.name || '未命名图表', getParameters(chart))
             if (!item.key.startsWith("chart_tabs")) {
                 const chartTab = chartTabs(props.groups, chart.groupId, chart.id)
                 if (chartTab?.chartIds[0] === chart.id) {
@@ -343,7 +364,15 @@ const ChartGrid = (props: ChartGridPros) => {
                         <Filters name={`chart-${chart.id}`}
                             filters={chart.cfg.filters}
                             lite={mobile}
-                            onChange={values => setFilterValues((pre: any) => ({ ...pre, ...values }))}
+                            onChange={values => {
+                                setFilterValues(pre => ({
+                                    ...pre,
+                                    chart: {
+                                        ...(pre.chart || {}),
+                                        [chart.id]: values || {}
+                                    }
+                                }))
+                            }}
                         // onChange={values => updateValues(`chart-${chart.id}`, values)} 
                         />
                     </div>}

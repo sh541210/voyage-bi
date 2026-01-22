@@ -6,6 +6,7 @@ import useList from "@/hooks/useList"
 import { genKey, useFileNodes } from "@/utils/biz"
 import { fixTreeSelect, recordToOptions } from "@/utils/common/common"
 import { formatDateTime2 } from "@/utils/common/date"
+import { renderChartNameWithParameters } from "@/utils/render"
 import request from "@/utils/request"
 import { Checkbox, Form, Input, message, Segmented, Select, Switch, Tabs, TreeSelect } from "antd"
 import FormItem from "antd/es/form/FormItem"
@@ -235,7 +236,7 @@ const ConfiguratorForm = (props: {
                 <Checkbox.Group<number>
                     options={charts.map(i =>
                     ({
-                        label: `${i.name || '未命名图表'}[${i.id}]`,
+                        label: renderChartNameWithParameters(`${i.name || '未命名图表'}[${i.id}]`),
                         value: i.id,
                         disabled: i.variableNames.length == 0
                     }))}
@@ -276,7 +277,7 @@ const ConfiguratorForm = (props: {
                 .map(chart => {
                     const mappings = cfg.parameterMappings[chart.id]
                     return ({
-                        key: chart.id.toString(), label: `${chart?.name || '未命名图表'}[${chart.id}]`,
+                        key: chart.id.toString(), label: renderChartNameWithParameters(`${chart?.name || '未命名图表'}[${chart.id}]`),
                         children: <>
                             {mappings && <div className="py-2 px-4 w-full relative items-center ">
                                 {chart.variableNames.map(variable => <div key={variable} className="flex w-full relative items-center">

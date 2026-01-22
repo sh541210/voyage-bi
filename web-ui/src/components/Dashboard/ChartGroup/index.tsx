@@ -53,7 +53,7 @@ export const useChartGroupModal = () => {
                                     options: charts.map(i => ({ value: i.id, label: i.name }))
                                 }
                             },
-                            { dataIndex: 'customData', title: '自定义数据', valueType: 'textarea' }
+                            // { dataIndex: 'customData', title: '自定义数据', valueType: 'textarea' }
                         ]} onSave={async item => {
                             const formData = { ...item, dashboardId }
                             let id

@@ -57,6 +57,13 @@ public class VariablesSQLHandler extends AbstractSqlHandler implements SelectHan
         if (sqlOptimizer != null) {
             sqlOptimizer.handlePlainSelect(select);
         }
+        select.getSelectItems().forEach(i -> {
+            Alias alias = i.getAlias();
+            if (alias != null && (alias.getName().contains(VALID_PH) || alias.getName().contains(INVALID_PH))) {
+                alias.setName(alias.getName().replace(VALID_PH, "")
+                        .replace(INVALID_PH, ""));
+            }
+        });
     }
 
     @Override

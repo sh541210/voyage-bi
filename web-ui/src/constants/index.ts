@@ -20,10 +20,11 @@ export const COLORS = [
 export const dateFormats: DateFormat[] = ['YEAR', 'MONTH', 'WEEK', 'DAY', 'HOUR', 'MINUTE']
 
 // 组件对应值数量
-export const COMPONENT_VALUE_COUNT: Record<ComponentType, number> = {
+export const COMPONENT_VALUE_COUNT: Record<ComponentType | 'textarea', number> = {
     dateMonth: 1, dateRange: 2, dateMonthRange: 2,
     input: 1, select: 1, treeSelect: 1, radio: 1,
-    radioButton: 1, date: 1, segmented: 1, cascader: 1
+    radioButton: 1, date: 1, segmented: 1, cascader: 1,
+    switch: 1, textarea: 1
 }
 
 export const MAX_COLUMN_COUNT = 100

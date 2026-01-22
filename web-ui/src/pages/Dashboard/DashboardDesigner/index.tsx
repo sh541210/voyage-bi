@@ -10,7 +10,7 @@ import { useObject } from "@/hooks"
 import { GridType, requiedRulesInput, requiredRuleSelect } from "@/constants"
 import { CodeEditor } from "@/components/base/Editor"
 import { useTheme } from "@/components/setting/ThemeSelector"
-import { useCollapse } from "@/utils/render"
+import { renderChartNameWithParameters, useCollapse } from "@/utils/render"
 import { GRID_TYPE_LABEL } from "@/constants/ChineseMapping"
 import Kanban from "@/components/Kanban"
 import { useModeSwitch } from ".."
@@ -76,7 +76,7 @@ const DashboardDesigner = () => {
         return list.length > 0 && renderCollapse(`${GRID_TYPE_LABEL[type]}筛选器位置`,
             list.map(i => <div className="mt-2" key={`${type}${i.id}}`}>
                 {/* @ts-ignore */}
-                {i.name || i.title}({GRID_TYPE_LABEL[type]})
+                {renderChartNameWithParameters(i.name || i.title)}({GRID_TYPE_LABEL[type]})
                 <Radio.Group defaultValue={'block'} value={i.styleCfg.filterDisplay}
                     optionType='button' className="ml-2"
                     onChange={e => {
@@ -150,7 +150,7 @@ const DashboardDesigner = () => {
                                 i.styleCfg.hideChartIds = { ...i.styleCfg.hideChartIds, [mode]: value }
                             })}
                             options={dashboard.charts.map(i =>
-                                ({ value: i.id, label: `${i.name || '-'}(${i.id})` }))}>
+                                ({ value: i.id, label: renderChartNameWithParameters(`${i.name || '-'}(${i.id})`) }))}>
                         </Checkbox.Group>
                     </>)}
                     {dashboard.groups.length > 0 && renderCollapse('隐藏组', <><Checkbox.Group value={dashboard.styleCfg.hideGroupIds?.[mode]}
@@ -250,8 +250,8 @@ const DashboardDesigner = () => {
             onChange={setSplitSize}
         >
             <div className="h-full relative w-full text-black dark:text-white p-2 bg-antdColorBgLayout dark:bg-antdDarkContainer"
-                // style={{ backgroundColor: token.colorBgLayout }}
-                >
+            // style={{ backgroundColor: token.colorBgLayout }}
+            >
                 <div className="border border-gray-200 dark:border-antdDarkBorder h-full">
                     {themeCfg && renderContent(renderDashboard(dashboard.current, themeCfg))}
                 </div>

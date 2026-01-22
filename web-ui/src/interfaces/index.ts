@@ -128,7 +128,7 @@ type FilterType = 'parameter' | 'dataSheet'
  * 组件类型，包含日期范围、输入框、选择框等。
  */
 type ComponentType = 'dateRange' | 'dateMonthRange' | 'dateMonth' | 'input' | 'select'
-    | 'treeSelect' | 'radio' | 'radioButton' | 'date' | 'segmented' | 'cascader'
+    | 'treeSelect' | 'radio' | 'radioButton' | 'date' | 'segmented' | 'cascader' | 'switch'
 type ValueType = ComponentType | 'textarea' | 'digit'
 
 /**
@@ -260,7 +260,7 @@ interface Column {
     func?: string // 函数
     sort?: Sort // 排序信息
     sortValues: any[] // 排序值
-    customData: string // 自定义数据
+    // customData: string // 自定义数据
     dateFormat?: DateFormat // 日期格式
     dateFormatInterval?: number
     valueProps?: ValueProps // 值属性

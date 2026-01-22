@@ -22,7 +22,7 @@ import { useDrillDowns } from "./drillDown"
 import { ItemType } from "antd/es/menu/interface"
 import { CONDITION_OPERATION_LABEL, DATE_FORMATS_LABEL, FUNCTION_NAME_LABEL } from "@/constants/ChineseMapping"
 import useList, { ListActions } from "@/hooks/useList"
-import { getHaveExpression, renderColumnLine, renderEmpty, renderSheetColumnTitle, renderToolTipTitle } from "@/utils/render"
+import { getHaveExpression, renderChartNameWithParameters, renderColumnLine, renderEmpty, renderSheetColumnTitle, renderToolTipTitle } from "@/utils/render"
 import { useBatchModal } from "./BatchModal"
 import { useChartWebSocket } from "@/hooks/websocket"
 import useModal from "@/hooks/useModal"
@@ -353,7 +353,7 @@ const ChartEditor = () => {
                 <Button className="mr-2 h-[45px]" onClick={() => {
                     history.push(`/analysisView?id=${chart.dashboardId}`, { locate: true })
                 }} type='text' size="large" icon={<MyIcon size={22} className="-mr-1 inline-flex fill-gray-500 dark:fill-gray-300" name='left' />} >
-                    编辑{chart.name || '未命名图表'}</Button>
+                    编辑{renderChartNameWithParameters(chart.name) || '未命名图表'}</Button>
                 <div className="flex flex-row items-center gap-3 h-full justify-start mr-2">
                     {selectorContext}
                     <DataModeSwitch className="h-full inline-flex" />

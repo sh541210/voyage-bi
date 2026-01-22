@@ -47,7 +47,8 @@ export const COMPONENT_TYPE_LABEL: Record<ComponentType | 'textarea', string> = 
     radioButton: '单选框「按钮」',
     segmented: '分段控制器',
     cascader: '级联选择器',
-    textarea: '文本输入框'
+    textarea: '文本输入框',
+    switch: "开关"
 }
 
 export const VALUE_TYPE_LABEL: Record<ValueType, string> = {
