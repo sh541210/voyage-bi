@@ -1,9 +1,8 @@
-import { CloseCircleFilled, SaveOutlined } from "@ant-design/icons"
+import { CloseCircleFilled, CloseOutlined, SaveOutlined } from "@ant-design/icons"
 import { Button, Collapse, Dropdown, Input, Tag, message } from "antd"
 import { history, useModel, useSearchParams } from "@umijs/max"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import request from "@/utils/request"
-import { ReactSortable } from "react-sortablejs"
 import classNames from "classnames"
 import ChartView from "@/components/Dashboard/Chart/ChartView"
 import { chartFunctions, dateFormats } from "@/constants"
@@ -27,9 +26,8 @@ import { useBatchModal } from "./BatchModal"
 import { useChartWebSocket } from "@/hooks/websocket"
 import useModal from "@/hooks/useModal"
 import SchemaForm from "@/components/base/SchemaForm"
-
-const activeClass = 'bg-primaryColor/10'
-const readyClass = 'bg-gray-100 dark:bg-antdDarkColorFillQuaternary'
+import { ProFormInstance } from "@ant-design/pro-components"
+import { useReactSortable } from "@/hooks/useReactSortable"
 
 const ChartEditor = () => {
     const [searchParams] = useSearchParams()
@@ -37,12 +35,12 @@ const ChartEditor = () => {
     const [dataSheet, setDataSheet] = useState<DataSheetVO>()
     const [sheetColumns, setSheetColumns] = useState<DataSheetColumnSimpleVO[]>()
     const [columnfilterKeyWord, setColumnsFilterKeyWord] = useState<string>('')
-    const [columnLineId, setColumnLineId] = useState<string>()
     const [x, xActions] = useList<ColumnLine>([])
     const [y, yActions] = useList<ColumnLine>([])
     const { token } = antTheme.useToken()
     const { themeCfg, selectorContext } = useTheme()
     const [modal, modalContextHolder] = useModal('code')
+    const formRef = useRef<ProFormInstance>(null)
     const { dataMode } = useModel('global')
     const { treeSelectData, toRefId } = useFileNodes('dataSheet')
     const drill = useDrillDowns()
@@ -52,6 +50,30 @@ const ChartEditor = () => {
             || i.name.includes(columnfilterKeyWord))
     const { open, batchModalContext } = useBatchModal(sheetColumns)
     const { fetchData } = useChartWebSocket()
+    const columnsSortable = useReactSortable<ColumnLine>({ scopeId: 'columns' })
+    const variableSortable = useReactSortable<any>({ scopeId: 'variables' })
+
+
+    // 更新 chart.cfg
+    const updateChartCfg = (fn: (cfg: ChartCfg) => void) => {
+        setChart(prev => {
+            if (!prev) return prev
+            const draft = { ...prev, cfg: { ...prev.cfg } }
+            fn(draft.cfg)
+            return draft
+        })
+    }
+
+    // 更新 chart.styleCfg
+    const updateChartStyleCfg = (fn: (styleCfg: ChartStyleCfg) => void) => {
+        setChart(prev => {
+            if (!prev) return prev
+            const draft = { ...prev, styleCfg: { ...prev.styleCfg } }
+            fn(draft.styleCfg)
+            return draft
+        })
+    }
+
 
     const fetchChart = (chartId: number) => request.GET<ChartVO>(`/chart?id=${chartId}`)
         .then(data => setChart(data))
@@ -99,13 +121,23 @@ const ChartEditor = () => {
     const drillDownParam = chart && drill.getDrillDownParam(chart.id)
     const getSheetColumn = (columnId?: number): DataSheetColumnSimpleVO | undefined => sheetColumns?.find(j => j.id === columnId)
 
-    const openModal = (values: Condition) => {
+    const openFilterAddModal = (values: Condition) => {
         modal.confirm({
             title: '设置筛选',
-            width: 600,
-            onOk: () => { },
-            content: <div className="flex flex-col">
+            width: 480,
+            onOk: async () => {
+                if (!formRef.current || !chart) return
+
+                // 主动提交 SchemaForm，获取表单值
+                const formData = await formRef.current?.validateFields()
+                if (!formData) return
+
+                updateChartCfg(cfg => cfg.conditions = [...(cfg.conditions || []).filter(i => i.key !== values.key),
+                { ...values, ...formData }])
+            },
+            content: (<div className="flex flex-col">
                 <SchemaForm<Condition>
+                    formRef={formRef}
                     labelCol={{ span: 3 }}
                     submitter={false}
                     initialValues={values}
@@ -113,19 +145,30 @@ const ChartEditor = () => {
                     columns={(values: Condition) => {
                         const arr: any[] = [
                             { key: 'name', title: '字段名', readonly: true },
-                            { key: 'desc', title: '名称', readonly: true }, {
-                                key: 'operation', title: '操作', valueType: 'radioButton',
+                            { key: 'desc', title: '名称', readonly: true },
+                            {
+                                key: 'operation',
+                                title: '操作',
+                                valueType: 'radio',
                                 fieldProps: { options: recordToOptions(CONDITION_OPERATION_LABEL) }
-                            }]
+                            }
+                        ]
+
                         if (values.operation === 'EXPR') {
                             arr.push({
-                                key: 'expression', title: '表达式', renderFormItem: () => <CodeEditor language="sql"
-                                    className="h-36 border dark:border-antdDarkBorder"
-                                    options={{
-                                        minimap: { enabled: false },
-                                        scrollbar: { horizontal: 'hidden' },
-                                        lineNumbers: 'off'
-                                    }} />
+                                key: 'expression',
+                                title: '表达式',
+                                renderFormItem: () => (
+                                    <CodeEditor
+                                        language="sql"
+                                        className="h-36 border dark:border-antdDarkBorder"
+                                        options={{
+                                            minimap: { enabled: false },
+                                            scrollbar: { horizontal: 'hidden' },
+                                            lineNumbers: 'off'
+                                        }}
+                                    />
+                                )
                             })
                         } else if (!values.operation.includes('NULL')) {
                             arr.push({ key: 'value', title: '值' })
@@ -133,13 +176,41 @@ const ChartEditor = () => {
                         return arr
                     }}
                 />
-            </div>
+            </div>)
         })
     }
 
-    const getBgClassName = (id: string) => {
-        if (!columnLineId) return ''
-        return columnLineId === id ? activeClass : readyClass
+    const openVariableAddModal = (variable: string) => {
+        modal.confirm({
+            title: '设置筛选',
+            width: 300,
+            onOk: async () => {
+                if (!formRef.current || !chart) return
+
+                // 主动提交 SchemaForm，获取表单值
+                const formData = await formRef.current?.validateFields()
+                if (!formData) return
+                console.log(formData)
+
+                updateChartCfg(cfg => {
+                    // @ts-ignore
+                    cfg.parameterConditions[variable] = formData.value
+                    console.log(cfg, 'cfg')
+                })
+            },
+            content: (<div className="flex flex-col">
+                <SchemaForm<Condition>
+                    formRef={formRef}
+                    labelCol={{ span: 6 }}
+                    submitter={false}
+                    // @ts-ignore
+                    initialValues={{ value: chart?.cfg.parameterConditions?.[variable], name: variable }}
+                    columns={[
+                        { key: 'name', title: '变量名', readonly: true },
+                        { key: 'value', title: '变量值' }]}
+                />
+            </div>)
+        })
     }
 
     const columnDropdownMenuItems = (isMertric: boolean, column: ColumnLine, index: number, actions: ListActions<ColumnLine>): { items: ItemType[] | undefined, onClick: (menuInfo: any) => void } => {
@@ -208,7 +279,7 @@ const ChartEditor = () => {
         }, ...(!tableChart ? [] : [{
             key: 'canBeSorted',
             label: <div className={classNames(' w-full', chart.styleCfg.sortedKeys?.includes(column.key) ? 'text-primaryColor dark:text-primaryColor/90' : '')}
-                onClick={() => chart && setChart({ ...chart, styleCfg: { ...chart.styleCfg, sortedKeys: toggle2Array(chart.styleCfg.sortedKeys || [], column.key) } })}>支持排序</div>
+                onClick={() => updateChartStyleCfg(styleCfg => styleCfg.sortedKeys = toggle2Array(chart.styleCfg.sortedKeys || [], column.key))}>支持排序</div>
         }]),
         ...(tableChart ? [{
             key: 'highlight', label: '高亮', children: systemConfig?.tableHighlights
@@ -219,7 +290,7 @@ const ChartEditor = () => {
                         onClick={() => {
                             const highlights: any = chart.styleCfg.highlights || {}
                             highlights[i.name] = toggle2Array(highlights[i.name] || [], column.key)
-                            chart && setChart({ ...chart, styleCfg: { ...chart.styleCfg, highlights } })
+                            updateChartStyleCfg(styleCfg => styleCfg.highlights = highlights)
                         }}>{i.label}</div>
                 }))
         }] : []), {
@@ -234,7 +305,7 @@ const ChartEditor = () => {
                         i.orderBy === column.sort?.orderBy ? 'text-primaryColor dark:text-primaryColor/90' : '')}
                         onClick={() => {
                             actions.updateAt(index, c => c.sort = { ...c.sort, key: column.key, name: column.name, orderBy: i.orderBy as SortOrderBy })
-                            chart && setChart({ ...chart, cfg: { ...chart.cfg, sortKey: i.key === 'default' ? undefined : column.key } })
+                            updateChartCfg(cfg => cfg.sortKey = i.key === 'default' ? undefined : column.key)
                         }}>{i.label}</div>
                 })), ...(column.dataType !== 'TEXT' ? [] : [{
                     key: 'custom',
@@ -295,8 +366,8 @@ const ChartEditor = () => {
             children: [{ name: 'mobile', key: '移动端' }, { name: 'pc', key: 'PC' }].map(i => ({
                 ...i, label: <div className={classNames('flex items-center gap-2',
                     chart.styleCfg.tableHideKeys?.[i.name]?.includes(column.key) ? 'text-primaryColor dark:text-primaryColor/90' : '')} onClick={() => {
-                        chart && setChart({
-                            ...chart, styleCfg: { ...chart.styleCfg, tableHideKeys: { ...chart.styleCfg.tableHideKeys, [i.name]: toggle2Array(chart.styleCfg.tableHideKeys?.[i.name] || [], column.key) } }
+                        updateChartStyleCfg(styleCfg => {
+                            styleCfg.tableHideKeys = { ...chart.styleCfg.tableHideKeys, [i.name]: toggle2Array(chart.styleCfg.tableHideKeys?.[i.name] || [], column.key) }
                         })
                     }}><MyIcon className={classNames(chart.styleCfg.tableHideKeys?.[i.name]?.includes(column.key) ? 'fill-primaryColor dark:fill-primaryColor/90' : '')} name={i.name} />
                     {i.key}
@@ -309,32 +380,28 @@ const ChartEditor = () => {
     const renderColumnClines = (isMetric: boolean, list: ColumnLine[], actions: ListActions<ColumnLine>) => {
         const title = isMetric ? '指标' : '维度'
         return <div className={classNames('h-[60px] w-full column-lines flex items-center flex-row dark:border-antdDarkBorder border-b p-2 overflow-hidden',
-            getBgClassName(title),
+            columnsSortable.getHighlightClass(title),
         )}>
             <div className="ml-1 w-[40px] text-gray-600 text-sm font-bold select-none dark:text-gray-200">{title}</div>
-            <ReactSortable
-                id={title}
-                ghostClass="column-line"
-                className='flex-1 flex flex-nowrap flex-row items-center h-full w-full overflow-x-auto overflow-y-hidden gap-2'
-                direction='vertical'
-                group={{ name: 'columns', 'pull': () => true }}
-                removeCloneOnHide={true}
-                list={list}
-                setList={(list, a, b) => b.dragging && actions.set(getSetupList(list, isMetric))}
-            >{list.map((column, idx) => {
-                return <div id={title} key={`${title}-${idx}`} ><Dropdown trigger={['hover']}
-                    menu={{ ...columnDropdownMenuItems(isMetric, column, idx, actions) }}>
-                    {chart && <div className={classNames('group flex flex-row relative pl-2 pr-2 py-1.5 shadow-md bg-primaryColor text-white rounded-sm cursor-pointer text-sm flex-shrink-0')}>
-                        <div className="flex items-center flex-nowrap" onClick={(e) => e.preventDefault()}>
-                            <MyIcon className=" fill-white mr-1" name='down' />
-                            {renderColumnLine(chart?.cfg.sortKey, column)}
-                            <CloseCircleFilled onClick={() => {
-                                actions.removeAt(idx)
-                            }} className="text-lg ml-1 opacity-0 group-hover:opacity-100 hover:text-blue-400" />
-                        </div>
-                    </div>}
-                </Dropdown></div>
-            })}</ReactSortable>
+            {columnsSortable.renderTarget({
+                id: title, list, ghostClass: 'column-line',
+                setList: list => actions.set(getSetupList(list, isMetric)),
+                className: 'flex-1 flex flex-nowrap flex-row items-center h-full w-full overflow-x-auto overflow-y-hidden gap-2',
+                renderItem: (column, idx) => <div id={title} key={`${title}-${idx}`} >
+                    <Dropdown trigger={['hover']}
+                        menu={{ ...columnDropdownMenuItems(isMetric, column, idx, actions) }}>
+                        {chart && <div className={classNames('group flex flex-row relative pl-2 pr-2 py-1.5 shadow-md bg-primaryColor text-white rounded-sm cursor-pointer text-sm flex-shrink-0')}>
+                            <div className="flex items-center flex-nowrap" onClick={(e) => e.preventDefault()}>
+                                <MyIcon className=" fill-white mr-1" name='down' />
+                                {renderColumnLine(chart?.cfg.sortKey, column)}
+                                <CloseCircleFilled onClick={() => {
+                                    actions.removeAt(idx)
+                                }} className="text-lg ml-1 opacity-0 group-hover:opacity-100 hover:text-blue-400" />
+                            </div>
+                        </div>}
+                    </Dropdown>
+                </div>
+            })}
             <div className="w-[30px] ml-1 flex justify-center">
                 <MyIcons bgHover size={18} moreSize={14} icons={[{
                     name: 'edit', title: '批量处理', onClick: () => open(title, list, chart?.cfg.sortKey, isMetric,
@@ -343,6 +410,41 @@ const ChartEditor = () => {
                     moreList={['edit', 'delete']} />
             </div>
         </div >
+    }
+
+    const renderInnerFilter = (chart: ChartVO, i: Condition) => {
+        const column = getSheetColumn(i.id)
+        return (
+            <div id={'筛选器'} className=" text-sm rounded-sm relative" key={i.id || i.name}>
+                <Collapse
+                    size='small'
+                    bordered={false}
+                    expandIcon={({ isActive }) => <MyIcon className=" fill-gray-500"
+                        name={isActive ? 'down' : 'right'} />}
+                    style={{ background: token.colorBgContainer, userSelect: 'none' }}
+                    items={[{
+                        key: i.key, label: (<div className="flex justify-between items-center w-full">
+                            <span className="truncate">{column?.desc}</span>
+                            <CloseOutlined
+                                className="ml-2 text-base text-gray-400 hover:text-red-400"
+                                onClick={e => {
+                                    e.stopPropagation()
+                                    updateChartCfg(cfg => cfg.conditions = (chart.cfg.conditions || []).filter(cond => cond.key !== i.key))
+                                }}
+                            />
+                        </div>),
+                        children: (<div onClick={() => openFilterAddModal({ ...column, ...i })}
+                            className="bg-antdColorBgLayout dark:bg-antdDarkColorFillTertiary -mt-1 p-2 text-xs hover:bg-gray-100 dark:hover:bg-antdDarkColorFillSecondary cursor-pointer rounded-sm"
+                        >{(i.operation === 'EXPR' && i.expression) || (
+                            <div>
+                                <span className=" font-bold text-sm mr-1">{CONDITION_OPERATION_LABEL[i.operation]} </span>
+                                <span className="underline ">{i.value}</span>
+                            </div>
+                        )}</div>)
+                    }]}
+                />
+            </div>
+        )
     }
 
     return <>
@@ -437,107 +539,76 @@ const ChartEditor = () => {
                                         </div>
                                         {filterSheetColumns && <div
                                             className="overflow-auto flex-1 relative h-full">
-                                            <ReactSortable
-                                                className="flex flex-col gap-1 items-start"
-                                                id={'sheetColumns'}
-                                                sort={false}
-                                                group={{ name: 'columns', 'pull': 'clone', put: false }}
-                                                onStart={() => {
-                                                    setColumnLineId('start')
-                                                }}
-                                                onMove={(evt) => {
-                                                    setColumnLineId(evt.related.id)
-                                                    if (evt.related.id) {
-                                                        return true
-                                                    }
-                                                    return false
-                                                }}
-                                                onEnd={() => {
-                                                    setColumnLineId(undefined)
-                                                }}
-                                                list={filterSheetColumns}
-                                                setList={() => { }}
-                                            >{filterSheetColumns
-                                                .map(i => <div className="flex cursor-pointer pl-2 pr-2 py-1.5 items-center bg-white dark:bg-antdDarkContainer text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:font-semibold select-none whitespace-nowrap text-ellipsis overflow-hidden w-auto"
-                                                    key={i.id}>
-                                                    <MyIcon size={16} className="mr-2 fill-primaryColor dark:fill-primaryColor/90 " name={i.dataType} />
-                                                    {renderSheetColumnTitle(i)}
-                                                </div>)}
-                                            </ReactSortable>
+                                            {columnsSortable.renderSource({
+                                                id: 'sheetColumns',
+                                                className: 'flex flex-col gap-1 items-start',
+                                                renderEmpty: () => renderEmpty('没有字段'),
+                                                // @ts-ignore
+                                                list: filterSheetColumns,
+                                                renderItem: (item, idx) => <div className="flex cursor-pointer pl-2 pr-2 py-1.5 items-center bg-white dark:bg-antdDarkContainer text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:font-semibold select-none whitespace-nowrap text-ellipsis overflow-hidden w-auto"
+                                                    key={item.id}>
+                                                    <MyIcon size={16} className="mr-2 fill-primaryColor dark:fill-primaryColor/90 " name={item.dataType} />
+                                                    {renderSheetColumnTitle(item)}
+                                                </div>
+                                            })}
                                         </div>}
                                     </div>
                                     <div className={classNames(' basis-[300px] dark:border-antdDarkBorder border-t pt-2',
-                                        getBgClassName('筛选器')
+                                        columnsSortable.getHighlightClass('筛选器')
                                     )}>
                                         <div className=" text-black text-antdDarkColorFillSecondary dark:text-gray-200 font-bold text-sm px-2">筛选器</div>
-                                        <ReactSortable
-                                            id={'筛选器'}
-                                            className={'h-full relative p-2'}
-                                            direction='vertical'
-                                            group={{ name: 'columns', 'pull': () => true }}
-                                            list={chart.cfg.conditions || []}
-                                            onAdd={(evt) => {
-                                                if (evt.oldIndex && filterSheetColumns?.[evt.oldIndex]) {
-                                                    const column = filterSheetColumns?.[evt.oldIndex]
-                                                    const values = {
-                                                        key: genKey(), id: column.id,
-                                                        desc: column.desc, operation: 'EXPR',
-                                                        name: column.name
-                                                    } as Condition
-                                                    openModal(values)
-                                                }
-                                            }}
-                                            setList={() => { }}
-                                        >
-                                            {sheetColumns && chart.cfg.conditions.map((i: Condition) => {
-                                                const column = getSheetColumn(i.id)
-                                                return <div className=" text-sm rounded-sm" key={i.id || i.name}>
-                                                    <Collapse
-                                                        size='small'
-                                                        bordered={false}
-                                                        expandIcon={({ isActive }) => <MyIcon className=" fill-gray-500"
-                                                            name={isActive ? 'down' : 'right'} />}
-                                                        style={{ background: token.colorBgContainer, userSelect: 'none' }}
-                                                        items={[{
-                                                            key: i.key, label: column?.desc, children: <div onClick={() => openModal({ ...column, ...i })} className="bg-antdColorBgLayout dark:bg-antdDarkColorFillTertiary -mt-1 p-2 text-xs hover:bg-gray-100 dark:hover:bg-antdDarkColorFillSecondary cursor-pointer rounded-sm">
-                                                                {i.expression || <div>
-                                                                    <span className=" font-bold text-sm mr-1">{CONDITION_OPERATION_LABEL[i.operation]} </span>
-                                                                    <span className="underline ">{i.value}</span>
-                                                                </div>}
-                                                            </div>
-                                                        }]}
-                                                    />
-                                                </div>
-                                            })}
-                                        </ReactSortable>
+                                        {columnsSortable.renderTarget({
+                                            id: '筛选器', className: 'h-full relative p-2',
+                                            // @ts-ignore
+                                            list: chart.cfg.conditions || [], setList: () => { },
+                                            renderEmpty: () => renderEmpty('拖动字段到这里进行筛选'),
+                                            onAddIndex: (index, evt) => {
+                                                const column = (filterSheetColumns?.[index]) as DataSheetColumnSimpleVO
+                                                const values = {
+                                                    key: genKey(), id: column.id,
+                                                    desc: column.desc, operation: 'EXPR',
+                                                    name: column.name
+                                                } as Condition
+                                                openFilterAddModal(values)
+                                            },
+                                            renderItem: (item, _) => renderInnerFilter(chart, item as unknown as Condition)
+                                        })}
                                     </div>
                                 </div>
                             },
                             {
                                 title: '变量', key: '变量',
                                 content: <div className="flex flex-col h-full relative">
-                                    <ReactSortable
-                                        sort={false}
-                                        group={{ name: 'variableSortable', 'pull': 'clone', put: false }}
-                                        list={dataSheet?.variableNames.map(i => ({ id: i })) || []}
-                                        setList={() => { }}
-                                        className="flex-1 px-4 overflow-hidden flex flex-col gap-4">
-                                        {(dataSheet?.variableNames.length || 0) > 0 ?
-                                            dataSheet?.variableNames.map(i => <div className="text-sm cursor-pointer select-none hover:font-bold" key={i}>{i}</div>) :
-                                            renderEmpty('暂无变量', ' text-sm')}
-                                    </ReactSortable>
-                                    <div className=" basis-[300px] text-gray-500 dark:text-gray-200 text-sm rounded-sm dark:border-antdDarkBorder border-t pt-2">
-                                        <div className="text-black text-antdDarkColorFillSecondary dark:text-gray-200 mb-2 font-bold text-sm px-2">默认参数</div>
-                                        <ReactSortable
-                                            group={{ name: 'variableSortable', 'pull': () => true }}
-                                            list={Object.entries(chart.cfg.parameterConditions)?.map(([name, value]) => ({ id: name, name, value }))}
-                                            setList={() => { }}
-                                            className="mt-2 flex flex-col px-2">
-                                            {Object.keys(chart.cfg.parameterConditions).map(i => <div key={i}>
-                                                <Tag>{i}</Tag>
-                                                等于<Tag className="ml-2">{(chart.cfg.parameterConditions as any)[i]}</Tag>
-                                            </div>)}
-                                        </ReactSortable>
+                                    {variableSortable.renderSource({
+                                        id: '变量列表', list: dataSheet?.variableNames.map(i => ({ id: i })) || [],
+                                        className: 'flex-1 px-4 overflow-hidden flex flex-col gap-4',
+                                        renderEmpty: () => renderEmpty('没有变量'),
+                                        renderItem: (i) => <div className="text-sm cursor-pointer select-none hover:font-bold min-w-4" key={i.id}>{i.id}</div>
+                                    })}
+                                    <div id="默认变量" className={classNames('basis-[300px] text-gray-500 dark:text-gray-200 text-sm rounded-sm dark:border-antdDarkBorder border-t pt-2',
+                                        variableSortable.getHighlightClass('默认变量')
+                                    )}>
+                                        <div id="默认变量" className="text-black text-antdDarkColorFillSecondary dark:text-gray-200 mb-2 font-bold text-sm px-2">默认参数</div>
+                                        {variableSortable.renderTarget({
+                                            id: '默认变量', list: Object.entries(chart.cfg.parameterConditions)?.map(([name, value]) => ({ id: name, name, value })),
+                                            setList: item => { }, className: 'h-full relative px-2',
+                                            onAddIndex: index => {
+                                                const variable = dataSheet?.variableNames?.[index];
+                                                variable && openVariableAddModal(variable)
+                                            },
+                                            renderEmpty: () => renderEmpty('拖动变量到这里进行设置默认值'),
+                                            renderItem: i => <div id="默认变量" className=" cursor-pointer border p-2 hover:bg-gray-200 dark:hover:bg-gray-600" key={i}
+                                                onClick={() => openVariableAddModal(i.name)}>
+                                                <Tag>{i.name}</Tag>等于<Tag className="ml-2">{i.value}</Tag>
+                                                <CloseOutlined
+                                                    className="ml-2 text-base text-gray-400 hover:text-red-400"
+                                                    onClick={e => {
+                                                        e.stopPropagation()
+                                                        updateChartCfg(cfg => delete cfg.parameterConditions[i.name])
+                                                    }}
+                                                />
+                                            </div>
+                                        })}
                                     </div>
                                 </div>
                             }]}
@@ -557,7 +628,6 @@ const ChartEditor = () => {
                             dataRequest={{
                                 source: 'develop',
                                 chartId: chart.id,
-                                //  env: 'default',
                                 shareKey: chart?.shareKey,
                                 preview: true,
                                 dataMode,
@@ -585,7 +655,7 @@ const ChartEditor = () => {
                     />}
                 </div>
             </div>
-        </div>}
+        </div >}
     </>
 }
 

@@ -112,7 +112,7 @@ export const renderActive = (dom: JSX.Element | number | string | undefined) => 
 export const renderToolTipTitle = (name: string | JSX.Element, desc?: string | JSX.Element) => {
     const keyStr = typeof name === 'string' ? name : (name as any)?.key?.toString() || Math.random().toString()
     return <div key={keyStr} className="text-ellipsis whitespace-nowrap overflow-hidden select-none cursor-pointer ">
-        {desc ? <Tooltip placement='leftTop' mouseEnterDelay={0.3}
+        {desc ? <Tooltip placement='leftTop' mouseEnterDelay={1}
             title={desc}>{name}
         </Tooltip> : name}
     </div>

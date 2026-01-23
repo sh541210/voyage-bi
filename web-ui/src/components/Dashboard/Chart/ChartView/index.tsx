@@ -63,11 +63,13 @@ const ChartView = (props: ChartViewProps) => {
         if (props.xColumns.length == 0 && props.yColumns.length == 0) {
             return
         }
-        // 判断钻取参数、变量参数、x/y轴变更
+        // 判断钻取参数、变量参数、x/y轴变更、筛选、默认变量
         if (!deepEqual(pre?.drillDownParam, next.drillDownParam) ||
             !deepEqual(pre?.parameters, next.parameters) ||
             !deepEqual(pre?.chartCfg?.groupBy, next.chartCfg?.groupBy) ||
-            !deepEqual(pre?.chartCfg?.values, next.chartCfg?.values)) {
+            !deepEqual(pre?.chartCfg?.values, next.chartCfg?.values) ||
+            !deepEqual(pre?.chartCfg?.conditions, next.chartCfg?.conditions) ||
+            !deepEqual(pre?.chartCfg?.parameterConditions, next.chartCfg?.parameterConditions)) {
             fetchData()
         }
     })
@@ -294,6 +296,7 @@ const ChartView = (props: ChartViewProps) => {
         props.chartStyleCfg.sortedKeys,
         mobile, width, dark,
         props.chartStyleCfg.renderChartConfig,
+        props.chartStyleCfg.tableHideKeys,
         chartComponent,
         chartComponents
     ])
