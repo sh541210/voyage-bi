@@ -18,9 +18,9 @@ public class HomeCenterController {
     @GetMapping("data")
     public HomeCenterDataVO getHomeCenterData() {
         List<FileTreeNodeVO> nodes = fileTreeNodeService.getNodesByCreateBy();
-        long dataSheetCount = nodes.stream().filter(i -> i.getBizType().equals(BizType.DATA_SHEET.name())).count();
-        long datasourceCount = nodes.stream().filter(i -> i.getBizType().equals(BizType.DATASOURCE.name())).count();
-        long dashboardCount = nodes.stream().filter(i -> i.getBizType().equals(BizType.DASHBOARD.name())).count();
+        long dataSheetCount = nodes.stream().filter(i -> i.getBizType().equals(BizType.DATA_SHEET.getCode())).count();
+        long datasourceCount = nodes.stream().filter(i -> i.getBizType().equals(BizType.DATASOURCE.getCode())).count();
+        long dashboardCount = nodes.stream().filter(i -> i.getBizType().equals(BizType.DASHBOARD.getCode())).count();
         HomeCenterDataVO data = new HomeCenterDataVO();
         data.setDataSheetCount(dataSheetCount);
         data.setDatasourceCount(datasourceCount);
