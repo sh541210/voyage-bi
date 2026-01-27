@@ -240,6 +240,8 @@ export default defineConfig({
       "local:react",
       "local:lock",
       "local:unlock",
+      "local:folder_open",
+      "local:folder"
     ],
   },
   tailwindcss: {},

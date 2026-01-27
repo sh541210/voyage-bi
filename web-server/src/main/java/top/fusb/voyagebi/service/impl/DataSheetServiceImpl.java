@@ -11,9 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.fusb.bi.data.base.utils.DynamicBlocks;
 import top.fusb.voyagebi.domain.DataSheetExtraInfo;
-import top.fusb.voyagebi.domain.FileBizTypes;
 import top.fusb.voyagebi.domain.VO.*;
-import top.fusb.voyagebi.domain.annotation.FileNodeUpdate;
 import top.fusb.voyagebi.domain.enums.SheetColumnDataType;
 import top.fusb.voyagebi.domain.enums.SheetColumnType;
 import top.fusb.voyagebi.domain.request.DataSheetColumnForm;
@@ -25,6 +23,8 @@ import top.fusb.voyagebi.persist.mapper.DataSheetMapper;
 import top.fusb.voyagebi.service.DataSheetService;
 import top.fusb.voyagebi.service.facade.DataClientFacade;
 import top.fusb.voyagebi.service.facade.DataQueryRequest;
+import top.fusb.voyagebi.web.resource.node.domain.BizType;
+import top.fusb.voyagebi.web.resource.node.domain.annotation.FileNodeUpdate;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -210,7 +210,7 @@ public class DataSheetServiceImpl implements DataSheetService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    @FileNodeUpdate(bizType = FileBizTypes.DATA_SHEET)
+    @FileNodeUpdate(bizType = BizType.DATA_SHEET)
     public void modify(DataSheet form) {
         DataSheet sheet = dataSheetMapper.selectById(form.getId());
         sheet.setSqlText(form.getSqlText());

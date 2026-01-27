@@ -113,3 +113,6 @@
         color: #fff!important
     }
 }
+.ant-tree-node-content-wrapper {
+    padding-left: 0!important;
+}

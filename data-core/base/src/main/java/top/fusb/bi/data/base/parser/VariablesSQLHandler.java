@@ -192,8 +192,24 @@ public class VariablesSQLHandler extends AbstractSqlHandler implements SelectHan
                 // 找到对应变量值并判断是否需要加引号
                 Object rawValue = variableValues.get(variableName);
                 if (rawValue != null) {
-                    boolean hasQuota = matcher.start() > 0 &&
-                            (sql.charAt(matcher.start() - 1) == '\'' || sql.charAt(matcher.start() - 1) == '"');
+                    int start = matcher.start();
+
+                    // 只判断“是否已经在字符串字面量内部”，而不是前后是否有引号
+                    boolean hasQuota = false;
+
+                    // 向左扫描，判断是否处在字符串中（遇到未闭合的引号）
+                    for (int i = start - 1; i >= 0; i--) {
+                        char c = sql.charAt(i);
+                        if (c == '\'' || c == '"') {
+                            hasQuota = true;
+                            break;
+                        }
+                        // 遇到 SQL 关键分隔符，说明不在字符串中
+                        if (c == ' ' || c == '(' || c == ')' || c == '=' || c == ',') {
+                            break;
+                        }
+                    }
+
                     replacement = toStringValue(rawValue, !hasQuota);
                 } else {
                     replacement = INVALID_PH;

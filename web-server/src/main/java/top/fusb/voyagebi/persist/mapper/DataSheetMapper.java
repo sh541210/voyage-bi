@@ -4,12 +4,12 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.example.server.mybatis.BaseMapper;
 import top.fusb.bi.data.base.domin.DatasourceType;
+import top.fusb.voyagebi.base.domain.utils.CacheManager;
 import top.fusb.voyagebi.domain.DataSheetCfg;
 import top.fusb.voyagebi.domain.enums.SheetType;
 import top.fusb.voyagebi.persist.entity.DataSheet;
-import top.fusb.voyagebi.persist.entity.FileTreeNode;
-import top.fusb.voyagebi.service.IFileNodeBizService;
-import top.fusb.voyagebi.utils.CacheManager;
+import top.fusb.voyagebi.web.resource.node.persist.FileTreeNode;
+import top.fusb.voyagebi.web.resource.node.service.IFileNodeBizService;
 
 import java.io.Serializable;
 import java.time.Duration;

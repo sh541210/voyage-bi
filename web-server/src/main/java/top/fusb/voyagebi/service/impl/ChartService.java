@@ -235,8 +235,9 @@ public class ChartService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public long copyChart(Long chartId) {
-        Chart chart = chartMapper.selectById(chartId);
+    public long copyChart(Long dashboardId, Long chartId) {
+        Chart chart = chartMapper.selectOne(i -> i.eq(Chart::getId, chartId)
+                .eq(Chart::getDashboardId, dashboardId));
         chart.setId(null);
         chartMapper.insert(chart);
         updateGroupChartIds(chart.getGroupId());
@@ -298,8 +299,9 @@ public class ChartService {
         chartGroupMapper.updateById(group);
     }
 
-    public void removeGroup(Long groupId) {
-        long count = chartMapper.countBy(i -> i.eq(Chart::getGroupId, groupId));
+    public void removeGroup(Long dashboardId, Long groupId) {
+        long count = chartMapper.countBy(i -> i.eq(Chart::getGroupId, groupId)
+                .eq(Chart::getDashboardId, dashboardId));
         if (count > 0) {
             throw new RuntimeException("存在图表关联");
         }
@@ -322,13 +324,16 @@ public class ChartService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void removeChart(Long id) {
-        Long groupId = chartMapper.selectValueById(Chart::getGroupId, id);
-        chartMapper.deleteById(id);
-        updateGroupChartIds(groupId);
+    public void removeChart(Long dashboardId, Long id) {
+        Chart chart = chartMapper.selectOne(i -> i.eq(Chart::getId, id)
+                .eq(Chart::getDashboardId, dashboardId));
+        if (chart != null) {
+            chartMapper.deleteById(id);
+            updateGroupChartIds(chart.getGroupId());
+        }
     }
 
-    public void changeSheet(Long chartId, Long dataSheetId) {
+    public void changeSheet(Long chartId, Long dataSheetId, Long dashboardId) {
         Chart chart = chartMapper.selectById(chartId);
         List<Column> values = chart.getCfg().getValues();
         List<Column> groupBy = chart.getCfg().getGroupBy();

@@ -199,10 +199,26 @@ java -jar ./web-server/target/voyage-bi.jar
 ├── sql                         # SQL脚本目录
 │   ├── example.sql            # 示例查询脚本
 │   └── structure.sql          # 数据库表结构脚本
+├── voyage-base                 # base模块
+│   └── src/main/java/top/fusb/voyagebi/base
+│       ├── utils             # 工具类
+│       └── VO                # 通用视图
 ├── web-client                  # 客户端SDK
 │   └── src/main/java/top/fusb/voyagebi/client
 │       ├── domain             # API传输对象
 │       └── utils              # 签名验签工具
+├── web-resource-node                # 资源节点模块
+│   └── src/main/java/top/fusb/voyagebi/web/resource/node
+│       ├── aspect             # 资源节点切面
+│       ├── controller         # 控制器层
+│       ├── domain             # 业务模型
+│       │   ├── annotation     # 注解定义
+│       ├── persist            # 持久层
+│       │   └── mapper         # MyBatis映射
+│       ├── service            # 服务层
+│       │   ├── aspect         # AOP切面
+│       ├── utils              # 工具类
+│       └── websocket          # WebSocket服务
 ├── web-server                  # 后端服务主模块
 │   └── src/main/java/top/fusb/voyagebi
 │       ├── config             # 系统配置中心
@@ -288,7 +304,7 @@ java -jar ./web-server/target/voyage-bi.jar
 
 1.组件开发预览优化
 2.组件显示规则配置
-3.……
+3.其他bug及优化项
 
 ## 🌟 后续计划
 
@@ -297,10 +313,11 @@ java -jar ./web-server/target/voyage-bi.jar
 3. 增加其他数据源类型
 4. 修改sql生成方式
 5. 移动端筛选使用移动端组件
-6. ……
+6. 各维度权限锁
+   7……
 
 ## 📜 许可证
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)  
 本项目采用 [GNU GPLv3 许可证](https://www.gnu.org/licenses/gpl-3.0) 开源，详见 [LICENSE](LICENSE)。  
-Copyright © 2025 [shuangbofu](https://github.com/shuangbofu)
+Copyright © 2026 [shuangbofu](https://github.com/shuangbofu)

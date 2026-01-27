@@ -111,7 +111,7 @@ const DashboardPage = () => {
                             })
                     })
             }}
-            onCopyChart={chartId => request.POST(`/chart/copy?chartId=${chartId}`).then((newChartId: number) => {
+            onCopyChart={chartId => request.POST(`/chart/copy/${dashboard.id}?chartId=${chartId}`).then((newChartId: number) => {
                 message.success('复制成功！')
                 // FIXME 复制筛选key重复问题
                 const newChart: ChartVO = { ...dashboard.charts.find(i => i.id === chartId), id: newChartId, } as ChartVO
@@ -123,7 +123,7 @@ const DashboardPage = () => {
                 })
                 changeLayout({ ...layoutCfg })
             })}
-            onRemoveChart={chartId => request.DELETE(`chart?id=${chartId}`).then(() => {
+            onRemoveChart={chartId => request.DELETE(`chart/${dashboard.id}?id=${chartId}`).then(() => {
                 message.success('删除成功！')
                 const idx = dashboard.charts.findIndex(i => i.id === chartId)
                 setDashboard({

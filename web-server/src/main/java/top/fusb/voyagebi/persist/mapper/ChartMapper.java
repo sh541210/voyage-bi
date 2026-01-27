@@ -2,8 +2,8 @@ package top.fusb.voyagebi.persist.mapper;
 
 
 import org.example.server.mybatis.BaseMapper;
+import top.fusb.voyagebi.base.domain.utils.CacheManager;
 import top.fusb.voyagebi.persist.entity.Chart;
-import top.fusb.voyagebi.utils.CacheManager;
 
 import java.time.Duration;
 

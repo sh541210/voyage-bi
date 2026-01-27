@@ -1,6 +1,6 @@
 import FileTree, { FileTreeNode, FileTreeRefProps } from "@/components/base/FileTree"
 import request from "@/utils/request"
-import { AimOutlined, LoadingOutlined, NodeCollapseOutlined, PlusOutlined } from "@ant-design/icons"
+import { AimOutlined, LoadingOutlined, LockOutlined, NodeCollapseOutlined, PlusOutlined } from "@ant-design/icons"
 import { PageContainer, PageContainerProps, ProFormColumnsType, ProFormInstance } from "@ant-design/pro-components"
 import { css } from "@emotion/css"
 import { Button, ConfigProvider, Dropdown, message, theme, Tooltip } from "antd"
@@ -84,7 +84,13 @@ const CommonLayout = forwardRef(<B, T extends string = string>(props: CommonLayo
         nodeList.map(vo => convertToNode(vo, i => i.bizRefId > 0, i => false)),
         [nodeList])
 
-    const updateNodeList = (node: FileTreeNodeVO) => setNodeList([...nodeList, node])
+    const updateNodeList = (node: FileTreeNodeVO) => {
+        if (nodeList.map(i => i.id).includes(node.id)) {
+            setNodeList(nodeList.map(i => i.id === node.id ? node : i))
+        } else {
+            setNodeList([...nodeList, node])
+        }
+    }
 
     const getEditPromise = (title: String) =>
         (value: FileTreeNodeForm) => request.PUT('/file-tree-node', value).then(() => {
@@ -94,6 +100,7 @@ const CommonLayout = forwardRef(<B, T extends string = string>(props: CommonLayo
         })
 
     const renderCeateModal = (keyPath: string[], node?: FileTreeNode<FileTreeNodeVO>) => {
+        const selectDicNode = node && node?.origin.bizRefId == 0
         const groupKey = keyPath[keyPath.length - 1]
         const name = node?.directory ? '文件夹' : bizName
         let title: string = ''
@@ -106,7 +113,8 @@ const CommonLayout = forwardRef(<B, T extends string = string>(props: CommonLayo
         if (groupKey.includes('new')) {
             initialValues = {
                 id: 0, name: '', description: '',
-                pid: node?.origin.id || 0, bizType
+                // @ts-ignore
+                pid: node?.origin.id, bizType
             }
         }
         if (groupKey === 'newFolder') {
@@ -146,13 +154,18 @@ const CommonLayout = forwardRef(<B, T extends string = string>(props: CommonLayo
             columns = columns.map(i => ({ ...i, readonly: true }))
         }
         if (groupKey !== 'rename') {
-            const tree = converVOListToNodes(nodeList.filter(i => i.bizRefId == 0), i => true)
+            const tree = converVOListToNodes(nodeList.filter(i => i.bizRefId == 0), i => !i.locked, i => i.locked)
             columns.push({
                 title: '所属文件夹', dataIndex: 'pid',
                 valueType: 'treeSelect',
                 ...requiredRuleSelect,
                 fieldProps: {
-                    treeData: fixTreeSelect(tree),
+                    // @ts-ignore
+                    treeData: fixTreeSelect([{
+                        ...tree[0],
+                        selectable: selectDicNode || groupKey === 'newFolder',
+                        disabled: !(selectDicNode || groupKey === 'newFolder')
+                    }]),
                     showSearch: true,
                     treeDefaultExpandedKeys: [0],
                     treeNodeFilterProp: 'title',
@@ -201,9 +214,23 @@ const CommonLayout = forwardRef(<B, T extends string = string>(props: CommonLayo
     }
 
     const renderRightMenus = (node: FileTreeNode<FileTreeNodeVO>) => {
+        const locked = node.origin.locked
+        const lockLabel = locked ? '解锁' : '锁定'
         let menus: ItemType<any>[] = [
             { key: 'rename', label: '重命名', onClick: ({ key, keyPath }: MenuInfo) => renderCeateModal(keyPath, node) },
             { key: 'move', label: '移动', onClick: ({ key, keyPath }: MenuInfo) => renderCeateModal(keyPath, node) },
+            ...((locked ? node.origin.unLockable : node.origin.lockable) ? [{
+                key: 'lock', label: lockLabel, onClick: () => {
+                    request.POST(`/file-tree-node/lock/${node.origin.id}/${!locked}`)
+                        .then(() => {
+                            message.success(`${lockLabel}成功！`)
+                            updateNodeList({
+                                ...node.origin, locked: !locked,
+                                lockTime: !locked ? new Date().getTime() : 0
+                            })
+                        })
+                }
+            },] : []),
             {
                 key: 'remove', label: '删除', disabled: !node.isLeaf,
                 onClick: ({ key }: MenuInfo) => request.DELETE(`/file-tree-node?id=${node.origin.id}`).then(() => {
@@ -217,7 +244,12 @@ const CommonLayout = forwardRef(<B, T extends string = string>(props: CommonLayo
                 info.domEvent.stopPropagation()
                 i.onClick && i.onClick(info)
             }
-        }))
+        })).filter(i => {
+            if (node.origin.id === 0) {
+                return i.key === 'newFolder'
+            }
+            return true
+        })
     }
 
     const getBreadcrumbItems = (nodeList: FileTreeNodeVO[]) => {
@@ -291,16 +323,25 @@ const CommonLayout = forwardRef(<B, T extends string = string>(props: CommonLayo
                 <div className=" overflow-auto" style={{ flex: 1 }}>
                     <FileTree<FileTreeNodeVO>
                         searchText={filterText}
-                        renderIcon={(node, { selected }) => {
-                            if (!node.directory) {
-                                const props = {
-                                    width: 18,
-                                    height: 18,
-                                    fill: selected ? '#fff' : colorPrimary, icon: `local:${node.origin.bizTypeExtra}`
-                                }
-                                // @ts-ignore
-                                return <Icon {...props} />
-                            }
+                        renderIcon={(node, { selected, expanded }) => {
+                            const dict = node.origin.bizRefId === 0;
+                            // const props = {
+                            //     width: 18,
+                            //     height: 18,
+                            //     fill: 
+                            //     icon: `local:${}`
+                            // }
+                            // @ts-ignore
+                            return <div className="flex items-center">
+                                <MyIcon size={dict ? 22 : 18} style={{
+                                    fill: selected ? '#fff' : colorPrimary,
+                                }} name={dict ? (expanded ? 'folder_open' : 'folder') : node.origin.bizTypeExtra} />
+                                {node.origin.locked && <MyIcon name="lock" size={18}
+                                    className={classNames('ml-1 -mr-0.5 ',
+                                        selected ? 'fill-yellow-300' : 'fill-yellow-500'
+                                    )}
+                                />}
+                            </div>
                         }}
                         renderTitle={node => {
                             const { origin } = node
@@ -311,7 +352,8 @@ const CommonLayout = forwardRef(<B, T extends string = string>(props: CommonLayo
                                         ? '未知' : origin.createUser}</div>
                                     <div>创建时间：{formatDateTime(origin.createTime)}</div>
                                     <div>修改用户：{origin.updateUser}</div>
-                                    <div>修改时间：{formatDateTime(origin.updateTime)}</div>
+                                    {origin.locked && <div>锁定时间：{formatDateTime(origin.lockTime)}</div>}
+                                    {origin.locked && <div>锁定用户：{origin.lockUserName}</div>}
                                 </div>}>
                                 {node.title}
                             </Tooltip>
@@ -360,7 +402,11 @@ const CommonLayout = forwardRef(<B, T extends string = string>(props: CommonLayo
                     }}
                     header={{
                         title: <div className="flex items-center gap-2"><MyIcon name={node.bizTypeExtra}
-                            size={24} className=" fill-primaryColor" />{node.name}</div>,
+                            size={24} className=" fill-primaryColor" />{node.locked && (
+                                <MyIcon size={24} name="lock"
+                                    className="fill-yellow-500 -ml-0.5 -mr-1 "
+                                />
+                            )}{node.name}</div>,
                         subTitle: node.description,
                         style: {
                             padding: '10px 20px', height: '100%', position: 'relative',

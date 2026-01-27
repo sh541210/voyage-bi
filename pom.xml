@@ -11,7 +11,11 @@
     <modules>
         <module>web-server</module>
         <module>web-client</module>
+        <!-- 数据相关 -->
         <module>data-core</module>
+        <!-- 资源节点 -->
+        <module>web-resource-node</module>
+        <module>voyage-base</module>
     </modules>
 
     <properties>

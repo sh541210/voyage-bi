@@ -112,12 +112,12 @@ export const max = <T>(objects: T[], fieldToCompare: keyof T): T | undefined => 
 }
 
 type KeyOf<T> = keyof T;
-// @ts-ignored
+// @ts-ignore
 export function arrayToRecord<T, K extends KeyOf<T>, V extends KeyOf<T>>(array: T[], keyProp: K, valueProp: V): Record<T[K], T[V]> {
   return array.reduce((acc, curr) => {
     acc[curr[keyProp]] = curr[valueProp];
     return acc;
-    // @ts-ignored
+    // @ts-ignore
   }, {} as Record<T[K], T[V]>);
 }
 

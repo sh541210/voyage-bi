@@ -2,7 +2,7 @@ package top.fusb.voyagebi.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
-import top.fusb.voyagebi.utils.DateToLongDeserializer;
+import top.fusb.voyagebi.base.domain.utils.DateToLongDeserializer;
 
 import java.io.Serializable;
 import java.util.Map;

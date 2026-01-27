@@ -5,8 +5,8 @@ import top.fusb.voyagebi.domain.DashboardCfg;
 import top.fusb.voyagebi.domain.enums.DashboardType;
 import top.fusb.voyagebi.domain.request.DashboardEditForm;
 import top.fusb.voyagebi.persist.entity.Dashboard;
-import top.fusb.voyagebi.persist.entity.FileTreeNode;
-import top.fusb.voyagebi.service.IFileNodeBizService;
+import top.fusb.voyagebi.web.resource.node.persist.FileTreeNode;
+import top.fusb.voyagebi.web.resource.node.service.IFileNodeBizService;
 
 import java.util.HashMap;
 import java.util.List;

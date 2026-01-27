@@ -6,8 +6,8 @@ import top.fusb.bi.data.base.domin.DatasourceType;
 import top.fusb.voyagebi.domain.DatasourceCfg;
 import top.fusb.voyagebi.domain.DatasourceCfgStore;
 import top.fusb.voyagebi.persist.entity.Datasource;
-import top.fusb.voyagebi.persist.entity.FileTreeNode;
-import top.fusb.voyagebi.service.IFileNodeBizService;
+import top.fusb.voyagebi.web.resource.node.persist.FileTreeNode;
+import top.fusb.voyagebi.web.resource.node.service.IFileNodeBizService;
 
 import java.util.Map;
 

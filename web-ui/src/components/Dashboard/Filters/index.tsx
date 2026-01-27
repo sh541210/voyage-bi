@@ -72,10 +72,11 @@ const Filters = (props: FilterProps) => {
                     const valueColumn = i.optionsProps.valueColumn
                     if (valueColumn && labelColumn || ((componentType === 'treeSelect' || componentType === 'cascader') &&
                         (i.optionsProps.treeSortColumns?.length || 0) > 0)) {
-                        column.request = async () => {
+                        column.debounceTime = 500
+                        column.request = async (params: any) => {
                             const result = await request.POST<DataResult>('/data-sheet/data/v2', {
                                 id: datasheetId,
-                                parameters: (props.parameters || {})[i.key],
+                                parameters: { ...(props.parameters || {})[i.key], 'keyWords': params.keyWords },
                                 columns: [i.optionsProps.labelColumn, i.optionsProps.valueColumn]
                                     .filter(i => i && i.trim().length > 0)
                             })

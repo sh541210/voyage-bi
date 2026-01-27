@@ -190,12 +190,10 @@ const ChartEditor = () => {
                 // 主动提交 SchemaForm，获取表单值
                 const formData = await formRef.current?.validateFields()
                 if (!formData) return
-                console.log(formData)
 
                 updateChartCfg(cfg => {
                     // @ts-ignore
                     cfg.parameterConditions[variable] = formData.value
-                    console.log(cfg, 'cfg')
                 })
             },
             content: (<div className="flex flex-col">
@@ -515,7 +513,7 @@ const ChartEditor = () => {
                                                         message.error('未选择数据集')
                                                         return
                                                     }
-                                                    await request.PUT(`/chart/sheet/${chart.id}/${toRefId(nodeId)}`)
+                                                    await request.PUT(`/chart/sheet/${chart.id}/${toRefId(nodeId)}/${chart.dashboardId}`)
                                                         .then(() => fetchChart(chart.id))
                                                     message.success('数据集切换成功！')
                                                     return true

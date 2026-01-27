@@ -10,6 +10,8 @@ import top.fusb.voyagebi.domain.request.DataSheetColumnForm;
 import top.fusb.voyagebi.domain.request.SheetDataGetParam;
 import top.fusb.voyagebi.persist.entity.DataSheet;
 import top.fusb.voyagebi.service.impl.DataSheetServiceImpl;
+import top.fusb.voyagebi.web.resource.node.domain.RequestType;
+import top.fusb.voyagebi.web.resource.node.domain.annotation.LockCheck;
 
 import java.util.List;
 import java.util.Map;
@@ -71,6 +73,7 @@ public class DataSheetController {
      * @param form 数据集字段表单
      */
     @PutMapping("column")
+    @LockCheck(checkType = LockCheck.CheckType.dataSheet)
     public void updateColumn(@RequestBody @Validated DataSheetColumnForm form) {
         dataSheetService.updateColumn(form);
     }
@@ -94,6 +97,9 @@ public class DataSheetController {
      * @param dataSheetId 数据集ID
      */
     @PutMapping("columns")
+    @LockCheck(checkType = LockCheck.CheckType.dataSheet,
+            requestType = RequestType.PARAMS,
+            idName = "dataSheetId")
     public void updateColumns(@RequestParam("dataSheetId") Long dataSheetId) {
         dataSheetService.updateColumns(dataSheetId);
     }
@@ -104,6 +110,7 @@ public class DataSheetController {
      * @param form 数据集表单
      */
     @PutMapping
+    @LockCheck(checkType = LockCheck.CheckType.dataSheet)
     public void modify(@RequestBody DataSheet form) {
         dataSheetService.modify(form);
     }

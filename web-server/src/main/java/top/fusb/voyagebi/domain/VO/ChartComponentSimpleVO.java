@@ -2,6 +2,7 @@ package top.fusb.voyagebi.domain.VO;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import top.fusb.voyagebi.base.domain.VO.BaseVO;
 import top.fusb.voyagebi.domain.enums.ChartComponentType;
 
 import java.io.Serializable;

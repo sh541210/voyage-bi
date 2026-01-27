@@ -6,13 +6,14 @@ import org.springframework.web.bind.annotation.*;
 import top.fusb.bi.data.base.domin.DatasourceType;
 import top.fusb.voyagebi.domain.DatasourceCfg;
 import top.fusb.voyagebi.domain.DatasourceCfgStore;
-import top.fusb.voyagebi.domain.FileBizTypes;
-import top.fusb.voyagebi.domain.annotation.FileNodeUpdate;
 import top.fusb.voyagebi.domain.request.DatasourceCfgModifyRequest;
 import top.fusb.voyagebi.domain.request.DatasourceForm;
 import top.fusb.voyagebi.persist.entity.Datasource;
 import top.fusb.voyagebi.persist.mapper.DatasourceMapper;
 import top.fusb.voyagebi.service.manager.DataClientManager;
+import top.fusb.voyagebi.web.resource.node.domain.BizType;
+import top.fusb.voyagebi.web.resource.node.domain.annotation.FileNodeUpdate;
+import top.fusb.voyagebi.web.resource.node.domain.annotation.LockCheck;
 
 import java.util.List;
 
@@ -59,13 +60,15 @@ public class DatasourceController {
     }
 
     @PutMapping
-    @FileNodeUpdate(bizType = FileBizTypes.DATASOURCE)
+    @FileNodeUpdate(bizType = BizType.DATASOURCE)
+    @LockCheck(checkType = LockCheck.CheckType.datasource)
     public void modifyDatasource(@RequestBody DatasourceForm form) {
         datasourceMapper.updateById(aToB(form, Datasource.class));
     }
 
     @PutMapping("cfg")
-    @FileNodeUpdate(bizType = FileBizTypes.DATASOURCE)
+    @FileNodeUpdate(bizType = BizType.DATASOURCE)
+    @LockCheck(checkType = LockCheck.CheckType.datasource)
     public void modifyDatasourceCfg(@RequestBody DatasourceCfgModifyRequest request) {
         Datasource ds = datasourceMapper.selectById(request);
         DatasourceCfgStore cfgStore = ds.getCfgStore();

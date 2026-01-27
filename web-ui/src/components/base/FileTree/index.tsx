@@ -54,9 +54,10 @@ export const convertToTree = <T extends FileNode>(nodes: FileTreeNode<T>[], root
         }
         return acc;
     }, [] as FileTreeNode<T>[]);
+    // @ts-ignore
     return [{
         title: rootTitle, value: 0, key: '0', directory: true,
-        selectable: false, children: tree, origin: { id: 0 }
+        selectable: false, children: tree, origin: { id: 0, bizRefId: 0 }
     } as FileTreeNode<T>];
 };
 
@@ -149,7 +150,7 @@ const FileTree = forwardRef(<T extends FileNode,>(props: FileTreeProps<T>, ref: 
             </Dropdown>
         }}
         blockNode
-        switcherIcon={<DownOutlined className='!text-[12px] !text-[#444]'/>}
+        switcherIcon={<DownOutlined className='!text-[12px] !text-[#444]' />}
         className='bg-transparent overflow-auto px-4 py-2 h-full'
         onDragEnter={({ node }) => props.onMoveStart?.(node)}
         onDragEnd={({ node }) => props.onMoveEnd?.(node)}

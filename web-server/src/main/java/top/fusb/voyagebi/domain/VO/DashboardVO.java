@@ -1,9 +1,10 @@
 package top.fusb.voyagebi.domain.VO;
 
-import top.fusb.voyagebi.domain.DashboardCfg;
-import top.fusb.voyagebi.domain.enums.DashboardType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import top.fusb.voyagebi.base.domain.VO.BaseVO;
+import top.fusb.voyagebi.domain.DashboardCfg;
+import top.fusb.voyagebi.domain.enums.DashboardType;
 
 import java.io.Serializable;
 import java.util.List;

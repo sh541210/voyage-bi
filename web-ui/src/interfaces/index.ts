@@ -709,6 +709,18 @@ interface FileTreeNodeVO extends BaseVO {
     bizTypeExtra: string
     // 描述
     description: string
+    // 是否加锁
+    locked: boolean
+    // 加锁用户ID
+    lockUserId: number
+    // 加锁用户名
+    lockUserName: string
+    // 加锁时间
+    lockTime: number
+    // 是否可锁定
+    lockable: boolean
+    // 是否可解锁
+    unLockable: boolean
 }
 
 // 文件树节点业务类型枚举

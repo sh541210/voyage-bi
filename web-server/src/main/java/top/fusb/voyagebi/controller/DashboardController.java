@@ -11,6 +11,8 @@ import top.fusb.voyagebi.domain.VO.DashboardVO;
 import top.fusb.voyagebi.domain.request.DashboardEditForm;
 import top.fusb.voyagebi.persist.entity.Dashboard;
 import top.fusb.voyagebi.service.DashboardService;
+import top.fusb.voyagebi.web.resource.node.domain.RequestType;
+import top.fusb.voyagebi.web.resource.node.domain.annotation.LockCheck;
 
 import java.util.List;
 
@@ -38,6 +40,7 @@ public class DashboardController {
      * @return 编辑后的仪表盘ID
      */
     @PutMapping
+    @LockCheck(checkType = LockCheck.CheckType.dashboard)
     public Long edit(@RequestBody @Validated DashboardEditForm form) {
         return dashboardService.edit(form);
     }
@@ -48,6 +51,9 @@ public class DashboardController {
      * @param cfg 仪表盘配置
      */
     @PutMapping("cfg/{dashboardId}")
+    @LockCheck(checkType = LockCheck.CheckType.dashboard,
+            requestType = RequestType.PATH_VARIABLES,
+            idName = "dashboardId")
     public void editCfg(@PathVariable("dashboardId") Long dashboardId,
                         @RequestBody DashboardCfg cfg) {
         dashboardService.editCfg(dashboardId, cfg);
@@ -68,6 +74,7 @@ public class DashboardController {
      * @param dashboard 仪表盘对象，包含样式信息
      */
     @PutMapping("style")
+    @LockCheck(checkType = LockCheck.CheckType.dashboard)
     public void editStyle(@RequestBody Dashboard dashboard) {
         dashboardService.updateStyle(dashboard);
     }
@@ -77,6 +84,7 @@ public class DashboardController {
      * @param dashboard 仪表盘对象，包含布局信息
      */
     @PutMapping("layout")
+    @LockCheck(checkType = LockCheck.CheckType.dashboard)
     public void editLayout(@RequestBody Dashboard dashboard) {
         dashboardService.updateLayout(dashboard);
     }

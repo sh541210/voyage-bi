@@ -8,13 +8,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.fusb.voyagebi.domain.*;
 import top.fusb.voyagebi.domain.VO.*;
-import top.fusb.voyagebi.domain.annotation.FileNodeUpdate;
 import top.fusb.voyagebi.domain.request.DashboardEditForm;
 import top.fusb.voyagebi.domain.request.DashboardShareForm;
 import top.fusb.voyagebi.persist.entity.*;
 import top.fusb.voyagebi.persist.mapper.*;
 import top.fusb.voyagebi.service.DashboardService;
 import top.fusb.voyagebi.service.DashboardShareService;
+import top.fusb.voyagebi.web.resource.node.domain.BizType;
+import top.fusb.voyagebi.web.resource.node.domain.RequestType;
+import top.fusb.voyagebi.web.resource.node.domain.annotation.FileNodeUpdate;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,7 +48,7 @@ public class DashboardServiceImpl implements DashboardService, DashboardShareSer
         return listAToListB(chartGroups, ChartGroupVO.class);
     }
 
-    @FileNodeUpdate(bizType = FileBizTypes.DASHBOARD)
+    @FileNodeUpdate(bizType = BizType.DASHBOARD)
     @Override
     public void updateLayout(Dashboard dashboard) {
         Dashboard dash = new Dashboard();
@@ -90,7 +92,9 @@ public class DashboardServiceImpl implements DashboardService, DashboardShareSer
                 for (FilterCfg filter : cfg.getFilters()) {
                     Long dataSheetId = filter.dataSheetId();
                     // 筛选器中涉及到的数据集
-                    if (dataSheetId != null) dataSheetIds.add(dataSheetId);
+                    if (dataSheetId != null) {
+                        dataSheetIds.add(dataSheetId);
+                    }
                 }
             }));
             b.setGroups(listAToListB(a.getGroups(), ChartGroupSnapshot.class));
@@ -148,7 +152,7 @@ public class DashboardServiceImpl implements DashboardService, DashboardShareSer
     }
 
     @Override
-    @FileNodeUpdate(bizType = FileBizTypes.DASHBOARD)
+    @FileNodeUpdate(bizType = BizType.DASHBOARD)
     public Long create(DashboardEditForm form) {
         return dashboardMapper.create(form).getId();
     }
@@ -167,13 +171,15 @@ public class DashboardServiceImpl implements DashboardService, DashboardShareSer
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    @FileNodeUpdate(bizType = FileBizTypes.DASHBOARD)
+    @FileNodeUpdate(bizType = BizType.DASHBOARD)
     public Long edit(DashboardEditForm form) {
         Dashboard dashboard = dashboardMapper.selectById(form.getId());
         Long appId = dashboard.getAppId();
         Long newId = form.getAppId();
-        if (!Objects.equals(appId, newId)) dashboardShareMapper.updateBy(i -> i.set(DashboardShare::getAppId, newId)
-                .eq(DashboardShare::getDashboardId, form.getId()));
+        if (!Objects.equals(appId, newId)) {
+            dashboardShareMapper.updateBy(i -> i.set(DashboardShare::getAppId, newId)
+                    .eq(DashboardShare::getDashboardId, form.getId()));
+        }
         dashboardMapper.updateById(aToB(form, Dashboard.class));
         return form.getId();
     }
@@ -194,8 +200,8 @@ public class DashboardServiceImpl implements DashboardService, DashboardShareSer
     }
 
     @FileNodeUpdate(bizRefIdName = "dashboardId",
-            requestType = FileNodeUpdate.RequestType.PARAMS,
-            bizType = FileBizTypes.DASHBOARD)
+            requestType = RequestType.PARAMS,
+            bizType = BizType.DASHBOARD)
     @Override
     public void editCfg(Long dashboardId, DashboardCfg cfg) {
         Dashboard dashboard = new Dashboard();
@@ -214,8 +220,12 @@ public class DashboardServiceImpl implements DashboardService, DashboardShareSer
         DashboardShare share = dashboardShareMapper.selectOne(
                 i -> i.select(DashboardShare::getEnabled)
                         .eq(DashboardShare::getKey, key));
-        if (share == null) throw new BizException(-2, "没有找到仪表盘");
-        if (!share.getEnabled()) throw new BizException(-3, "仪表盘已关闭分享");
+        if (share == null) {
+            throw new BizException(-2, "没有找到仪表盘");
+        }
+        if (!share.getEnabled()) {
+            throw new BizException(-3, "仪表盘已关闭分享");
+        }
     }
 
     @Override
@@ -232,9 +242,13 @@ public class DashboardServiceImpl implements DashboardService, DashboardShareSer
         Map<Long, DataSheetExtraInfo> sheetExtraInfoMap = dataSheetService
                 .getDataSheetExtraInfo(chartIds);
         for (String key : keyList) {
-            if (!shares.containsKey(key)) throw new BizException(-2, "没有找到仪表盘");
+            if (!shares.containsKey(key)) {
+                throw new BizException(-2, "没有找到仪表盘");
+            }
             DashboardShare share = shares.get(key);
-            if (!share.getEnabled()) throw new BizException(-3, "仪表盘已关闭分享");
+            if (!share.getEnabled()) {
+                throw new BizException(-3, "仪表盘已关闭分享");
+            }
             Theme theme = themeMapper.selectById(share.getThemeId());
             DashboardSnapshot snapshot = share.getDashboardSnapshot();
             DashboardSnapshotVO vo = aToB(share, DashboardSnapshotVO.class);
@@ -269,13 +283,15 @@ public class DashboardServiceImpl implements DashboardService, DashboardShareSer
     @Override
     public Map<String, DashboardSimpleVO> getInfoListByKeys(String keys) {
         List<String> list = Arrays.asList(keys.split(","));
-        if (list.isEmpty()) return Map.of();
+        if (list.isEmpty()) {
+            return Map.of();
+        }
         return dashboardShareMapper.selectList(i -> i.in(DashboardShare::getKey, list))
                 .stream().collect(Collectors.toMap(DashboardShare::getKey, i -> aToB(i, DashboardSimpleVO.class)));
     }
 
     @Override
-    @FileNodeUpdate(bizType = FileBizTypes.DASHBOARD)
+    @FileNodeUpdate(bizType = BizType.DASHBOARD)
     public void updateStyle(Dashboard dashboard) {
         Dashboard origin = dashboardMapper.selectById(dashboard.getId());
         origin.setStyleCfg(dashboard.getStyleCfg());

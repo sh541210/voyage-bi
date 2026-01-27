@@ -17,6 +17,8 @@ import top.fusb.voyagebi.domain.request.ChartGroupForm;
 import top.fusb.voyagebi.persist.entity.Chart;
 import top.fusb.voyagebi.persist.mapper.ChartMapper;
 import top.fusb.voyagebi.service.impl.ChartService;
+import top.fusb.voyagebi.web.resource.node.domain.RequestType;
+import top.fusb.voyagebi.web.resource.node.domain.annotation.LockCheck;
 
 import java.util.List;
 
@@ -38,9 +40,13 @@ public class ChartController {
      *
      * @param id 图表ID
      */
-    @DeleteMapping
-    public void removeChart(@RequestParam("id") Long id) {
-        chartService.removeChart(id);
+    @DeleteMapping("/{dashboardId}")
+    @LockCheck(requestType = RequestType.PATH_VARIABLES,
+            checkType = LockCheck.CheckType.dashboard,
+            idName = "dashboardId")
+    public void removeChart(@RequestParam("id") Long id,
+                            @PathVariable("dashboardId") Long dashboardId) {
+        chartService.removeChart(dashboardId, id);
     }
 
     /**
@@ -83,6 +89,8 @@ public class ChartController {
      * @return 新创建图表的ID
      */
     @PostMapping
+    @LockCheck(checkType = LockCheck.CheckType.dashboard,
+            idName = "dashboardId")
     public Long create(@RequestBody ChartVO chartVO) {
         return chartService.createChart(chartVO);
     }
@@ -106,9 +114,13 @@ public class ChartController {
      * @param chartId 图表ID
      * @return 复制图表的ID
      */
-    @PostMapping("copy")
-    public long copyChart(@RequestParam("chartId") Long chartId) {
-        return chartService.copyChart(chartId);
+    @PostMapping("copy/{dashboardId}")
+    @LockCheck(requestType = RequestType.PATH_VARIABLES,
+            checkType = LockCheck.CheckType.dashboard,
+            idName = "dashboardId")
+    public long copyChart(@RequestParam("chartId") Long chartId,
+                          @PathVariable("dashboardId") Long dashboardId) {
+        return chartService.copyChart(dashboardId, chartId);
     }
 
     /**
@@ -117,6 +129,8 @@ public class ChartController {
      * @param chartVO 图表VO对象
      */
     @PutMapping
+    @LockCheck(checkType = LockCheck.CheckType.dashboard,
+            idName = "dashboardId")
     public void edit(@RequestBody ChartVO chartVO) {
         Chart chart = aToB(chartVO, Chart.class);
         chartMapper.updateById(chart);
@@ -128,6 +142,8 @@ public class ChartController {
      * @param form 图表VO对象
      */
     @PutMapping("style")
+    @LockCheck(checkType = LockCheck.CheckType.dashboard,
+            idName = "dashboardId")
     public void updateStyle(@RequestBody ChartVO form) {
         Chart chart = new Chart();
         chart.setId(form.getId());
@@ -141,10 +157,15 @@ public class ChartController {
      * @param chartId     图表ID
      * @param dataSheetId 数据表ID
      */
-    @PutMapping("sheet/{chartId}/{sheetId}")
+    @PutMapping("sheet/{chartId}/{sheetId}/{dashboardId}")
+    @LockCheck(
+            requestType = RequestType.PATH_VARIABLES,
+            checkType = LockCheck.CheckType.dashboard,
+            idName = "dashboardId")
     public void changeSheet(@PathVariable("chartId") Long chartId,
-                            @PathVariable("sheetId") Long dataSheetId) {
-        chartService.changeSheet(chartId, dataSheetId);
+                            @PathVariable("sheetId") Long dataSheetId,
+                            @PathVariable("dashboardId") Long dashboardId) {
+        chartService.changeSheet(chartId, dataSheetId, dashboardId);
     }
 
     /**
@@ -173,7 +194,9 @@ public class ChartController {
         DataResult result = chartService.fetchData(dataRequest);
         if (result.isSuccess()) {
             Object value = result.getData().getOne();
-            if (value != null) return Integer.parseInt(value.toString());
+            if (value != null) {
+                return Integer.parseInt(value.toString());
+            }
         }
         return 0;
     }
@@ -199,6 +222,8 @@ public class ChartController {
      * @return 更新后的图表组ID
      */
     @PutMapping("group")
+    @LockCheck(checkType = LockCheck.CheckType.dashboard,
+            idName = "dashboardId")
     public Long modifyGroup(@RequestBody @Validated ChartGroupForm chartGroupForm) {
         return chartService.saveChartGroup(chartGroupForm);
     }
@@ -210,6 +235,8 @@ public class ChartController {
      * @return 新创建的图表组ID
      */
     @PostMapping("group")
+    @LockCheck(checkType = LockCheck.CheckType.dashboard,
+            idName = "dashboardId")
     public Long createGroup(@RequestBody @Validated ChartGroupForm chartGroupForm) {
         chartGroupForm.setId(null);
         return chartService.saveChartGroup(chartGroupForm);
@@ -220,9 +247,12 @@ public class ChartController {
      *
      * @param groupId 图表组ID
      */
-    @DeleteMapping("group")
-    public void removeGroup(@RequestParam("groupId") Long groupId) {
-        chartService.removeGroup(groupId);
+    @DeleteMapping("group/{dashboardId}")
+    @LockCheck(checkType = LockCheck.CheckType.dashboard,
+            idName = "dashboardId")
+    public void removeGroup(@RequestParam("groupId") Long groupId,
+                            @PathVariable("dashboardId") Long dashboardId) {
+        chartService.removeGroup(dashboardId, groupId);
     }
 
     /**
@@ -231,6 +261,8 @@ public class ChartController {
      * @param chartGroupForm 图表组表单对象
      */
     @PutMapping("group/style")
+    @LockCheck(checkType = LockCheck.CheckType.dashboard,
+            idName = "dashboardId")
     public void updateGroupStyle(@RequestBody ChartGroupForm chartGroupForm) {
         chartService.updateChartGroupStyle(chartGroupForm);
     }

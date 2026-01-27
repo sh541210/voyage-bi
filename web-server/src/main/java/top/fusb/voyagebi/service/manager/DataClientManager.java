@@ -10,11 +10,11 @@ import top.fusb.bi.data.base.domin.DatasourceType;
 import top.fusb.bi.data.jdbc.client.MysqlDataClient;
 import top.fusb.bi.data.jdbc.client.SelectDBDataClient;
 import top.fusb.bi.data.jdbc.domain.RdsParam;
+import top.fusb.voyagebi.base.domain.utils.CacheManager;
 import top.fusb.voyagebi.domain.DatasourceCfg;
 import top.fusb.voyagebi.persist.entity.Datasource;
 import top.fusb.voyagebi.persist.mapper.DatasourceMapper;
 import top.fusb.voyagebi.service.facade.SqlOptimizer;
-import top.fusb.voyagebi.utils.CacheManager;
 
 import java.time.Duration;
 import java.util.Map;

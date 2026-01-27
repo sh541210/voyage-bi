@@ -12,7 +12,7 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import top.fusb.voyagebi.utils.JacksonUtils;
+import top.fusb.voyagebi.base.domain.utils.JacksonUtils;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
