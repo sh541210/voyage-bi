@@ -3,7 +3,7 @@ import { getColorFromString } from "@/utils/common/common"
 import { CloseCircleFilled, PlusOutlined } from "@ant-design/icons"
 import { Tag } from "antd"
 import classNames from "classnames"
-import { CSSProperties, JSX, useEffect, useState } from "react"
+import { CSSProperties, JSX, useEffect, useState, useRef } from "react"
 
 interface ItemsProps<T> {
     title?: string
@@ -15,11 +15,14 @@ interface ItemsProps<T> {
     style?: CSSProperties
     onRemove?: (index: number) => void
     onAdd?: () => void
+    onReorder?: (list: T[]) => void
 }
 
 const Items = <T extends LabelItem>(props: ItemsProps<T>) => {
     const { width = 200, height = 30, mode = 'vertical' } = props
     const [activeIndex, setActiveIndex] = useState<number>(0)
+    // 当前被拖拽的 item 下标
+    const dragIndexRef = useRef<number | null>(null)
     const { list = [] } = props
 
     useEffect(() => {
@@ -37,9 +40,35 @@ const Items = <T extends LabelItem>(props: ItemsProps<T>) => {
         <div className={classNames('flex relative dark:border-antdDarkBorder border-r overflow-auto p-2 gap-2',
             vertical ? ' flex-col h-full' : 'flex-row w-full border-b overflow-x-auto')}
             style={{ [vertical ? 'width' : 'height']: `${vertical ? width : height}px` }}>
-            {list.map((i, idx) => <div className={classNames(' cursor-pointer bg-white dark:bg-antdDarkContainer border',
-                vertical ? ' px-2 py-3' : 'py-1 px-4 flex-shrink-0',
-                idx === activeIndex ? 'bg-white dark:bg-antdDarkContainer border-primaryColor' : ' dark:border-antdDarkBorder')}
+            {list.map((i, idx) => <div
+                draggable
+                onDragStart={() => {
+                    // 记录开始拖拽的下标
+                    dragIndexRef.current = idx
+                }}
+                onDragOver={(e) => {
+                    // 允许放置
+                    e.preventDefault()
+                }}
+                onDrop={() => {
+                    // 交换位置
+                    const from = dragIndexRef.current
+                    const to = idx
+                    if (from === null || from === to) return
+                    const newList = [...list]
+                    const temp = newList[from]
+                    newList[from] = newList[to]
+                    newList[to] = temp
+                    // 通过 onRemove + onAdd 无法完成重排，这里要求外部通过 list 受控
+                    // 直接修改 activeIndex，list 由父组件更新
+                    dragIndexRef.current = null
+                    setActiveIndex(to)
+                    // 通知父组件（约定：父组件监听 list 顺序变化）
+                    props.onReorder?.(newList)
+                }}
+                className={classNames(' cursor-pointer bg-white dark:bg-antdDarkContainer border active:opacity-60',
+                    vertical ? ' px-2 py-3' : 'py-1 px-4 flex-shrink-0',
+                    idx === activeIndex ? 'bg-white dark:bg-antdDarkContainer border-primaryColor' : ' dark:border-antdDarkBorder')}
                 key={idx}
                 onClick={() => setActiveIndex(idx)}>
                 <div className=" flex flex-col justify-between group relative">

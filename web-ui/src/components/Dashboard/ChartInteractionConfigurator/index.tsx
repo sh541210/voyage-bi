@@ -84,6 +84,7 @@ const ChartInteractionConfigurator = (props: ChartInteractionConfiguratorProps) 
             source: props.source || null, targetEvent: 'openChartModal'
         })}
         onRemove={removeAt}
+        onReorder={set}
         list={list.map(i => ({
             ...i, title: <div>
                 <div><span className="font-bold">联动对象：</span>{getName(i.source, i)}</div>

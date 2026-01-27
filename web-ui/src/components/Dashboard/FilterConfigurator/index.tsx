@@ -78,6 +78,7 @@ const FilterConfigurator = (props: FilterConfiguratorProps) => {
             })
         }}
         onRemove={removeAt}
+        onReorder={set}
         list={list?.map(i => ({
             title: i.props?.title || formatDateTime2(Number(i.key)),
             ...i, labels: [FILTER_TYPE_LABEL[i.filterType], COMPONENT_TYPE_LABEL[i.componentType]]

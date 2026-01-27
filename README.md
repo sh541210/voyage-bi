@@ -139,7 +139,7 @@
 ### 在线体验
 
 直接访问 [在线演示](http://fusb.top:8088/#/home) 立即使用。
-> - 账号：admin
+> - 账号：guest
 > - 密码：12345&
 
 ### 本地运行
@@ -217,6 +217,7 @@ java -jar ./web-server/target/voyage-bi.jar
 │       │   └── mapper         # MyBatis映射
 │       ├── service            # 服务层
 │       │   ├── aspect         # AOP切面
+│       │   ├── access         # 分享校验
 │       │   ├── cache          # 缓存处理
 │       │   ├── facade         # DsClientFacade
 │       │   ├── impl           # 服务实现
