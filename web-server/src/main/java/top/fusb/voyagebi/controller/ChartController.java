@@ -249,6 +249,7 @@ public class ChartController {
      */
     @DeleteMapping("group/{dashboardId}")
     @LockCheck(checkType = LockCheck.CheckType.dashboard,
+            requestType = RequestType.PATH_VARIABLES,
             idName = "dashboardId")
     public void removeGroup(@RequestParam("groupId") Long groupId,
                             @PathVariable("dashboardId") Long dashboardId) {

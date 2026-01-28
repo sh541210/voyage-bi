@@ -95,8 +95,8 @@ public class FileNodeAspect {
             checkType = annotation.checkType();
             id = resolveId(signature, args, requestType, idName);
         } catch (Exception e) {
-            log.warn("Lock check get biz ref id error", e);
-            throw new RuntimeException("ee");
+            log.warn("Lock check resolveId error", e);
+//            throw new RuntimeException("ee", e);
         }
         if (id != null && checkType != null) {
             FileTreeNode treeNode = getTreeNode(Long.valueOf(id.toString()), checkType);

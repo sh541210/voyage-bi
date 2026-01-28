@@ -67,7 +67,7 @@ export const useChartGroupModal = () => {
                             fetchGroups()
                             return id;
                         }} onRemove={item =>
-                            request.DELETE(`/chart/group?groupId=${item.id}`).then(() => {
+                            request.DELETE(`/chart/group/${dashboardId}?groupId=${item.id}`).then(() => {
                                 message.success('删除成功！')
                                 fetchGroups()
                                 return true
