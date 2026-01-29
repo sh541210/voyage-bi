@@ -68,6 +68,12 @@ interface GridBase {
 }
 type GridItem = (ChartGroupVO & GridBase) | (ChartVO & GridBase)
 
+interface FilterValues {
+    global?: Record<string, any>
+    group?: Record<number | string, Record<string, any>>
+    chart?: Record<number | string, Record<string, any>>
+}
+
 export const chartTabs = (groups: ChartGroupVO[], groupId: number | null, chartId: number) => {
     return groups.find(i => i.id === groupId)?.cfg.chartTabs?.find(i => i.chartIds.includes(chartId))
 }
@@ -140,11 +146,55 @@ const ChartGrid = (props: ChartGridPros) => {
     const hideGroupIds = useMemo(() => { return props.dashboardStyleCfg?.hideGroupIds?.[mode] || [] },
         [props.dashboardStyleCfg])
 
+    /**
+     * 通用更新 filterValues
+     * @param path ['global'] | ['group', groupId] | ['chart', chartId]
+     * @param values 变化的 filter 值
+     * @param setFilterValues setState
+     *
+     * 特点：
+     * - 清空字段时只要 values[key] = undefined 即可被删除
+     * - 未传递的其他字段不会被误删
+     * - global / group / chart 都可通用
+     */
+    const updateFilterValues = (
+        path: Array<string | number>,
+        values: Record<string, any>,
+        setFilterValues: React.Dispatch<React.SetStateAction<FilterValues>>
+    ) => {
+        setFilterValues(pre => {
+            // 先浅拷贝最外层
+            const next = { ...pre }
+
+            // 找到要更新的目标对象
+            let target: Record<string, any> = next
+            for (let i = 0; i < path.length - 1; i++) {
+                const key = path[i]
+                target[key] = { ...(target[key] || {}) }
+                target = target[key]
+            }
+
+            const lastKey = path[path.length - 1]
+            target[lastKey] = { ...(target[lastKey] || {}) }
+
+            // 只处理显式传递的 key
+            Object.keys(values).forEach(k => {
+                const v = values[k]
+                if (v === undefined) {
+                    delete target[lastKey][k] // 删除显式为 undefined 的字段
+                } else {
+                    target[lastKey][k] = v // 合并变化
+                }
+            })
+
+            return next
+        })
+    }
+
     // 更新全局筛选器值
     useEffect(() => {
-        setFilterValues(pre => ({
-            ...pre, global: props.globalFilterValues || {}
-        }))
+        if (!props.globalFilterValues) return
+        updateFilterValues(['global'], props.globalFilterValues, setFilterValues)
     }, [props.globalFilterValues])
 
     /**
@@ -263,16 +313,7 @@ const ChartGrid = (props: ChartGridPros) => {
                         <Filters name={`group-${group.id}`}
                             filters={group.cfg.filters}
                             lite={mobile}
-                            onChange={values => {
-                                setFilterValues(pre => ({
-                                    ...pre,
-                                    group: {
-                                        ...(pre.group || {}),
-                                        [group.id]: values || {}
-                                    }
-                                }))
-                            }}
-                        // onChange={values => updateValues(`group-${group.id}`, values)}
+                            onChange={values => updateFilterValues(['group', group.id], values, setFilterValues)}
                         />}
                 </div>
                 <div
@@ -364,16 +405,7 @@ const ChartGrid = (props: ChartGridPros) => {
                         <Filters name={`chart-${chart.id}`}
                             filters={chart.cfg.filters}
                             lite={mobile}
-                            onChange={values => {
-                                setFilterValues(pre => ({
-                                    ...pre,
-                                    chart: {
-                                        ...(pre.chart || {}),
-                                        [chart.id]: values || {}
-                                    }
-                                }))
-                            }}
-                        // onChange={values => updateValues(`chart-${chart.id}`, values)} 
+                            onChange={values => updateFilterValues(['chart', chart.id], values, setFilterValues)}
                         />
                     </div>}
                 {!previewMode && !showTitle && <div className="absolute left-4 bottom-4 opacity-0 group-hover:opacity-100 text-xl text-gray-400 dark:text-antdDarkColorFill">{chartName}</div>}

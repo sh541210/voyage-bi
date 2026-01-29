@@ -142,11 +142,21 @@ const Filters = (props: FilterProps) => {
                 grid={false}
                 size='small'
                 submitter={false}
-                onValuesChange={(data: any) => {
+                // 使用onFieldsChange可以感知undefined（删除）
+                onFieldsChange={(arr: any[]) => {
+                    let data: any = {}
+                    arr.forEach(i => {
+                        data[i.name[0]] = i.value
+                    })
                     filters.filter(i => i.fieldProps?.mode === 'multiple').forEach(i => {
                         const value = data?.[i.key]
-                        if (Array.isArray(value) && value && value.length === 0) {
-                            // 注意：多选时的空数组希望是什么都不选的作用，所以需要赋值为null
+                        if (i.fieldProps?.mode === 'multiple') {
+                            if (Array.isArray(value) && value && value.length === 0) {
+                                // 注意：多选时的空数组希望是什么都不选的作用，所以需要赋值为null
+                                data[i.key] = undefined
+                            }
+                        }
+                        if (!Object.keys(data).includes(i.key)) {
                             data[i.key] = undefined
                         }
                     })
