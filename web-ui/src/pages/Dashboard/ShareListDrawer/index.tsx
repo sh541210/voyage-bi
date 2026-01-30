@@ -76,8 +76,8 @@ const ShareListDrawer = (props: ShareListDrawerProps) => {
                     },
                     { dataIndex: 'description', title: '描述', },
                     { dataIndex: 'key', title: 'key', width: 180 },
-                    { dataIndex: 'createTime', title: '创建时间', width: 160, renderText: (value) => formatTimestamp(value, 'YYYY-MM-dd HH:mm:ss') },
-                    { dataIndex: 'updateTime', title: '更新时间', width: 160, renderText: (value) => formatTimestamp(value, 'YYYY-MM-dd HH:mm:ss') },
+                    { dataIndex: 'createTime', title: '创建时间', width: 160, renderText: (value) => formatTimestamp(value) },
+                    { dataIndex: 'updateTime', title: '更新时间', width: 160, renderText: (value) => formatTimestamp(value) },
                     {
                         title: '操作',
                         valueType: 'option',

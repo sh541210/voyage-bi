@@ -11,6 +11,7 @@ import request from "@/utils/request"
 import { Checkbox, Form, Input, message, Segmented, Select, Switch, Tabs, TreeSelect } from "antd"
 import FormItem from "antd/es/form/FormItem"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { getDefaultFormat } from "../Filters"
 
 export const useFilterConfigurator = () => {
     const modalRef = useRef<any>(null)
@@ -169,8 +170,7 @@ const ConfiguratorForm = (props: {
                 {cfg.componentType?.includes('date') &&
                     <Input className="ml-2 !w-[200px]"
                         placeholder='输入日期格式'
-                        defaultValue={cfg.componentType?.toLowerCase()
-                            .includes('month') ? 'YYYY-MM' : 'YYYY-MM-dd'}
+                        defaultValue={getDefaultFormat(cfg.componentType)}
                         value={cfg.props.dateFormat}
                         onChange={e => onChange(i => i.props.dateFormat = e.target.value)} />}
                 {cfg.componentType === 'select' && <span className=" inline-flex items-center ml-2 text-sm">全部选项

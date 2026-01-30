@@ -2,7 +2,7 @@ import { convertToTreeData, distinctByKey } from "@/utils/common/common";
 import request from "@/utils/request";
 import { ProFormColumnsType, ProFormInstance, RequestOptionsType } from "@ant-design/pro-components"
 import classNames from "classnames";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useMemo, useRef, useState } from "react";
 import './index.less'
 import SchemaForm from "@/components/base/SchemaForm";
@@ -33,16 +33,16 @@ const Filters = (props: FilterProps) => {
             let value = form[i.key]
             const componentType = i.componentType
             if (!value) {
+                const defaultDateFormat = getDefaultFormat(i.componentType)
                 if (componentType === 'dateRange') {
                     form[i.key + "_quick"] = 'custom'
                     form[i.key] = [
-                        dayjs().subtract(0, 'month').startOf('month').format(i.props.dateFormat || 'YYYY-MM-DD'),
+                        dayjs().subtract(0, 'month').startOf('month').format(i.props.dateFormat || defaultDateFormat),
                         // dayjs().subtract(0, 'month').endOf('month')
-                        dayjs()
-                            .format(i.props.dateFormat || 'YYYY-MM-DD')]
+                        dayjs().format(i.props.dateFormat || defaultDateFormat)]
                 } else if (componentType === 'dateMonth') {
                     i.props
-                    form[i.key] = dayjs().subtract(0, 'month').startOf('month').format(i.props.dateFormat || 'YYYY-MM')
+                    form[i.key] = dayjs().subtract(0, 'month').startOf('month').format(i.props.dateFormat || defaultDateFormat)
                 }
             }
         })
@@ -146,7 +146,14 @@ const Filters = (props: FilterProps) => {
                 onFieldsChange={(arr: any[]) => {
                     let data: any = {}
                     arr.forEach(i => {
-                        data[i.name[0]] = i.value
+                        const name = i.name[0]
+                        const cfg = filters.filter(f => f.key == name)?.[0]
+                        // 使用了onFieldsChange，需要手动转化日期格式
+                        if (cfg?.componentType.includes('date')) {
+                            data[name] = dateFormat(cfg, i.value)
+                        } else {
+                            data[name] = i.value
+                        }
                     })
                     filters.filter(i => i.fieldProps?.mode === 'multiple').forEach(i => {
                         const value = data?.[i.key]
@@ -183,6 +190,55 @@ const Filters = (props: FilterProps) => {
                 columns={columns}
             /></div>}
     </>
+}
+
+export const dateFormat = (cfg: FilterCfg, day: Dayjs | Dayjs[]) => {
+    // 空值直接返回
+    if (!day) {
+        return undefined
+    }
+
+    // 读取已有的 dateFormat
+    let format = cfg.props?.dateFormat
+
+    // 如果没有配置 dateFormat，则根据组件类型给默认值
+    if (!format) {
+        format = getDefaultFormat(cfg.componentType)
+        // 回填到配置中，保证后续逻辑可复用
+        cfg.props = cfg.props || {}
+        cfg.props.dateFormat = format
+    }
+
+    // 数组情况（dateRange / dateMonthRange）
+    if (Array.isArray(day)) {
+        // 过滤非法值，避免 null / undefined
+        return day
+            .filter(d => dayjs.isDayjs(d))
+            .map(d => d.format(format))
+    }
+
+    // 单值情况（date / dateMonth）
+    if (dayjs.isDayjs(day)) {
+        return day.format(format)
+    }
+
+    return undefined
+}
+
+export const getDefaultFormat = (componentType: ComponentType) => {
+    switch (componentType) {
+        case 'date':
+        case 'dateRange':
+            return 'YYYY-MM-DD'
+            break
+        case 'dateMonth':
+        case 'dateMonthRange':
+            return 'YYYY-MM'
+            break
+        default:
+            // 非日期组件不处理
+            return undefined
+    }
 }
 
 export default Filters
