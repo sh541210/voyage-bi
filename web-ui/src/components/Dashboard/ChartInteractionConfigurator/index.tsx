@@ -70,8 +70,8 @@ const ChartInteractionConfigurator = (props: ChartInteractionConfiguratorProps) 
     const getName = (key: string | null, cfg: ChartInteractionCfg) => {
         if (!key) return ''
         const splits = key.split('_') as string[]
-        const obj: any = (splits[0] === 'chart' ? charts : groups)?.find(i => i.id === Number(splits[1]))
-        return obj.name || obj.title || '-'
+        const obj: any | undefined = (splits[0] === 'chart' ? charts : groups)?.find(i => i.id === Number(splits[1]))
+        return obj?.name || obj?.title || '-'
     }
 
     useEffect(() => props.onChange(list), [list])
