@@ -123,14 +123,23 @@ const DashboardPage = () => {
                 })
                 changeLayout({ ...layoutCfg })
             })}
-            onRemoveChart={chartId => request.DELETE(`chart/${dashboard.id}?id=${chartId}`).then(() => {
-                message.success('删除成功！')
-                const idx = dashboard.charts.findIndex(i => i.id === chartId)
-                setDashboard({
-                    ...dashboard, charts: dashboard.charts.slice(0, idx)
-                        .concat(dashboard.charts.slice(idx + 1))
+            onRemoveChart={chartId => {
+                const related = dashboard.cfg.chartInteractionCfgs.filter(i => {
+                    return i.source?.endsWith("_" + chartId) || i.target?.endsWith('_' + chartId)
+                }).length > 0
+                if (related) {
+                    message.error('存在联动，不允许删除')
+                    return;
+                }
+                request.DELETE(`chart/${dashboard.id}?id=${chartId}`).then(() => {
+                    message.success('删除成功！')
+                    const idx = dashboard.charts.findIndex(i => i.id === chartId)
+                    setDashboard({
+                        ...dashboard, charts: dashboard.charts.slice(0, idx)
+                            .concat(dashboard.charts.slice(idx + 1))
+                    })
                 })
-            })}
+            }}
             // env={'default'}
             displayMode={isFullscreen ? 'dev_preview' : 'develop'}
             dashboard={dashboard}

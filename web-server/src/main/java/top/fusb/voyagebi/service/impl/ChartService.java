@@ -40,6 +40,7 @@ public class ChartService {
     private final ChartGroupMapper chartGroupMapper;
     private final DataSheetColumnMapper dataSheetColumnMapper;
     private final DataSheetMapper dataSheetMapper;
+    private final DashboardMapper dashboardMapper;
     private final DataSheetService dataSheetService;
     private final DataClientFacade dataClientFacade;
     private final DatasourceMapper datasourceMapper;
