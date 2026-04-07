@@ -208,7 +208,7 @@ export default defineConfig({
       "local:WORD_CLOUD",
       "local:GUAGE",
       "local:MAP",
-      "local:TABLE",
+      "local:table",
       "local:FUNNEL",
       "local:STACKED_COLUMN_ENABLED",
       "local:STACKED_COLUMN_DISABLED",
